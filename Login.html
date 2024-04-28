@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<body>
+<script type="text/javascript" src="jquery-3.7.1.min.js"></script>
+<script src="connectConcept.js"></script>
+
+<h1>Login</h1>
+
+<form action="/action_page.php">
+  <label for="username">User Name:</label>
+  <input type="text" id="username" name="username"><br><br>
+  <label for="password">Password:</label>
+  <input type="text" id="password" name="password"><br><br>
+</form>
+<button onclick="LoginSuccessful()">Log In</button>
+<button onclick="Register()">Register</button>
+<p id = "ConnectionStatus">Not Connected<p>
+<button onclick="ConnectionAttempt()">Connect</button>
+<button onclick="DisCon()">Disconnect</button>
+</body> 
+<script>
+  function Register() {
+    fetch("/CreateProf", {
+      method:"POST",
+      headers:{
+        'Content-Type': 'application/json'
+      },
+      body:JSON.stringify({
+        username:document.getElementById('username').value,
+        password:document.getElementById('password').value
+      })
+    }).then((res)=>{
+      return res.json();
+    }).then((data)=>{
+      document.getElementById('ConnectionStatus').innerHTML = data.val;
+    })
+  }
+  function ConnectionAttempt() {
+    fetch("/Con").then((res)=>{
+      return res.json();
+    }).then((data)=>{
+      document.getElementById('ConnectionStatus').innerHTML = data.val;
+    })
+  }
+  function DisCon() {
+    fetch("/DisCon").then((res)=>{
+      return res.json();
+    }).then((data)=>{
+      document.getElementById('ConnectionStatus').innerHTML = data.val;
+    })
+  }
+</script>
+</html>
