@@ -1,7 +1,8 @@
-const Connection = require('tedious').Connection;  
+const Connection = require('tedious').Connection;
 const Request = require('tedious').Request;  
 const express = require('express');
 const { TYPES } = require('tedious');
+const { Salt, Hash } = require('./UserService');
 const app = express();
 
 app.use(express.json());
@@ -20,13 +21,16 @@ let config = {
         }
     },
     options: {
-        encrypt: true,
+        encrypt: false,
         database: 'TravelPlanner_S2G5'
     }
 };  
 let connection = new Connection(config);  
 connection.on('connect', function(err) {
     // If no error, then good to proceed.
+    if(err) {
+        console.log('Error: ', err)
+    } 
     console.log("Connected");  
 });
 
@@ -41,7 +45,6 @@ app.get("/DisCon", (req, res)=>{
 })
 
 app.post("/CreateProf", (req, res)=>{
-    console.log("test")
     let username = req.body.username;
     let password = req.body.password;
     let pref = null;
@@ -50,16 +53,44 @@ app.post("/CreateProf", (req, res)=>{
             console.log("Failed to register");
             console.log(err);
         }
-
     })
-     request.addParameter("userName", TYPES.VarChar, username);
-     request.addParameter("Password", TYPES.VarChar, password);
+    let salt = Salt();
+    let string = password + salt;
+    let hash = Hash(string);
+    request.addParameter("userName", TYPES.VarChar, username);
+    request.addParameter("PasswordSalt", TYPES.VarChar, salt);
+    request.addParameter("PasswordHash", TYPES.VarChar, hash);
     request.on("requestCompleted", (req)=>{
         console.log("Success");
         res.send({val:0});
     })
 
     connection.callProcedure(request);
+})
+app.post("/Login", (req, res)=>{
+    console.log("test")
+    let username = req.body.username;
+    let password = req.body.password;
+    let pref = null;
+    let request1 = new Request("GetPasswordInfo", (err)=>{
+        if(err){
+            console.log("Failed to register");
+            console.log(err);
+        }
+    })
+    request1.addParameter("userName", TYPES.VarChar, username);
+    connection.callProcedure(request1);
+    let salt = Salt();
+    let string = password + salt;
+    let hash = Hash(string);
+    request.addParameter("PasswordSalt", TYPES.VarChar, salt);
+    request.addParameter("PasswordHash", TYPES.VarChar, hash);
+    request.on("requestCompleted", (req)=>{
+        console.log("Success");
+        res.send({val:0});
+    })
+
+    
 })
 
 app.listen(3001, ()=>{

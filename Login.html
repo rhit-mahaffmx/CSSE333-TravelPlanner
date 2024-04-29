@@ -12,13 +12,17 @@
   <label for="password">Password:</label>
   <input type="text" id="password" name="password"><br><br>
 </form>
-<button onclick="LoginSuccessful()">Log In</button>
+<button onclick="Login()">Log In</button>
 <button onclick="Register()">Register</button>
 <p id = "ConnectionStatus">Not Connected<p>
-<button onclick="ConnectionAttempt()">Connect</button>
 <button onclick="DisCon()">Disconnect</button>
 </body> 
 <script>
+  fetch("/Con").then((res)=>{
+      return res.json();
+    }).then((data)=>{
+      document.getElementById('ConnectionStatus').innerHTML = data.val;
+    })
   function Register() {
     fetch("/CreateProf", {
       method:"POST",
@@ -35,8 +39,17 @@
       document.getElementById('ConnectionStatus').innerHTML = data.val;
     })
   }
-  function ConnectionAttempt() {
-    fetch("/Con").then((res)=>{
+  function Login() {
+    fetch("/CreateProf", {
+      method:"POST",
+      headers:{
+        'Content-Type': 'application/json'
+      },
+      body:JSON.stringify({
+        username:document.getElementById('username').value,
+        password:document.getElementById('password').value
+      })
+    }).then((res)=>{
       return res.json();
     }).then((data)=>{
       document.getElementById('ConnectionStatus').innerHTML = data.val;
