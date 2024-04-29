@@ -54,6 +54,8 @@
       return res.json();
     }).then((data)=>{
       document.getElementById('LoginStatus').innerHTML = data.val;
+            window.location.href = 'landingPage.html';
+        
     })
   }
   function DisCon() {

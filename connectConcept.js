@@ -104,8 +104,76 @@ app.post("/Login", (req, res)=>{
         res.send({val:returnVal});
         }
     });
+    function getUserID(userName, callback) {
+        const request = new Request("GetUserID", (err) => {
+            if (err) {
+                console.error("Failed to execute procedure: ", err);
+                callback(err);
+                return;
+            }
+        });
     
+        request.addParameter('userName', TYPES.VarChar, userName);
+        let userID = null;
+        request.on("row", (columns) => {
+            userID = columns[0].value;
+        });
     
+        request.on("requestCompleted", () => {
+            callback(null, userID);
+        });
+    
+        connection.callProcedure(request);
+    }
+
+    app.post("/CreateJournal", (req, res) => {
+        const { userName, Name } = req.body;
+        getUserID(userName, (err, userID) => {
+            if (err) {
+                res.status(500).send("Error retrieving user ID");
+                return;
+            }
+            const request = new Request("CreateJournal", (err) => {
+                if (err) {
+                    console.error("Failed to execute procedure: ", err);
+                    res.status(500).send({ message: "Failed to create journal" });
+                    return;
+                }
+            });
+    
+            request.addParameter('userID', TYPES.Int, userID);
+            request.addParameter('userName', TYPES.VarChar, userName);
+            request.addParameter('Name', TYPES.VarChar,Name);
+    
+            request.on("requestCompleted", () => {
+                console.log("Journal created successfully");
+                res.send({ message: "Journal created successfully" });
+            });
+    
+            connection.callProcedure(request);
+        });
+    });
+    
+    app.post('/createBudget', (req, res) => {
+        const { budgetId, spendingLimit, userId } = req.body;
+    
+        const request = new Request('CreateBudget', (err) => {
+            if (err) {
+                console.error('Database request error:', err);
+                res.status(500).send('Failed to create budget entry');
+                return;
+            }
+            res.send('Budget entry created successfully');
+        });
+    
+        request.addParameter('budgetId', TYPES.Int, budgetId);
+        request.addParameter('spendingLimit', TYPES.VarChar, spendingLimit);
+
+        request.addParameter('UserID', TYPES.Int, userId);
+    
+        connection.callProcedure(request);
+    });
+
     request1.on("requestCompleted", (req)=>{
         console.log("Success");
         //res.send({val:0});

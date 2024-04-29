@@ -12,27 +12,34 @@
         </form>
 
         <p id="message"></p>
-
+       
         <script type="text/javascript" src="connectConcept.js"></script>
         <script>
             document.getElementById('journal-form').addEventListener('submit', function(event) {
                 event.preventDefault();
-                const journalName = document.getElementById('journalName').value;
+                const Name = document.getElementById('journalName').value;
                 fetch("/CreateJournal", {
                     method: "POST",
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        userID: getUserId(), 
-                      //  userName: getUserName(), 
-                        journalName: journalName
+                        userID: 5, 
+                       // userName: getUserName(), 
+                        Name: Name
                     })
                 }).then(response => response.json())
                 .then(data => {
                     document.getElementById('message').innerText = data.message;
                 })
                 .catch(error => console.error('Error:', error));
+            });
+        </script>
+        <button id="goBack">Go Back</button>
+
+        <script>
+            document.getElementById('goBack').addEventListener('click', function() {
+                window.location.href = 'landingPage.html'; // Replace with your landing page URL
             });
         </script>
     </body>
