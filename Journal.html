@@ -1,0 +1,40 @@
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Create Journal</title>
+    </head>
+    <body>
+        <h1>Create Journal</h1>
+        <form id="journal-form">
+            <label for="journalName">Journal Name:</label>
+            <input type="text" id="journalName" name="journalName" required><br><br>
+            <input type="submit" value="Create Journal">
+        </form>
+
+        <p id="message"></p>
+
+        <script type="text/javascript" src="connectConcept.js"></script>
+        <script>
+            document.getElementById('journal-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const journalName = document.getElementById('journalName').value;
+                fetch("/CreateJournal", {
+                    method: "POST",
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userID: getUserId(), 
+                      //  userName: getUserName(), 
+                        journalName: journalName
+                    })
+                }).then(response => response.json())
+                .then(data => {
+                    document.getElementById('message').innerText = data.message;
+                })
+                .catch(error => console.error('Error:', error));
+            });
+        </script>
+    </body>
+    </html>
+</html>
