@@ -15,6 +15,7 @@
 <button onclick="Login()">Log In</button>
 <button onclick="Register()">Register</button>
 <p id = "ConnectionStatus">Not Connected<p>
+<p id = "LoginStatus"><p>
 <button onclick="DisCon()">Disconnect</button>
 </body> 
 <script>
@@ -40,7 +41,7 @@
     })
   }
   function Login() {
-    fetch("/CreateProf", {
+    fetch("/Login", {
       method:"POST",
       headers:{
         'Content-Type': 'application/json'
@@ -52,7 +53,7 @@
     }).then((res)=>{
       return res.json();
     }).then((data)=>{
-      document.getElementById('ConnectionStatus').innerHTML = data.val;
+      document.getElementById('LoginStatus').innerHTML = data.val;
     })
   }
   function DisCon() {

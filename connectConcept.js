@@ -36,11 +36,11 @@ connection.on('connect', function(err) {
 
 app.get("/Con", (req, res)=>{
     connection.connect();
-    res.send({val:"Connected"})
+    //res.send({val:"Connected"})
 })
 app.get("/DisCon", (req, res)=>{
     connection.close();
-    res.send({val:"Disconnected"})
+    //res.send({val:"Disconnected"})
     process.exit(0);
 })
 
@@ -62,32 +62,53 @@ app.post("/CreateProf", (req, res)=>{
     request.addParameter("PasswordHash", TYPES.VarChar, hash);
     request.on("requestCompleted", (req)=>{
         console.log("Success");
-        res.send({val:0});
+        //res.send({val:0});
     })
 
     connection.callProcedure(request);
 })
 app.post("/Login", (req, res)=>{
-    console.log("test")
     let username = req.body.username;
     let password = req.body.password;
     let pref = null;
     let request1 = new Request("GetPasswordInfo", (err)=>{
         if(err){
-            console.log("Failed to register");
+            console.log("Failed to Login");
             console.log(err);
         }
     })
     request1.addParameter("userName", TYPES.VarChar, username);
+    request1.addOutputParameter('PasswordSalt', TYPES.VarChar);
+    request1.addOutputParameter('PasswordHash', TYPES.VarChar);
     connection.callProcedure(request1);
-    let salt = Salt();
-    let string = password + salt;
-    let hash = Hash(string);
-    request.addParameter("PasswordSalt", TYPES.VarChar, salt);
-    request.addParameter("PasswordHash", TYPES.VarChar, hash);
-    request.on("requestCompleted", (req)=>{
+    let salt = null;
+    let hash = null;
+    request1.on('returnValue', function(parameterName, value, metadata) {
+        console.log(parameterName + ' = ' + value);
+        if(parameterName == 'PasswordSalt'){
+            salt = value;
+        }else{
+            hash = value;
+        }
+        let string = password + salt;
+        let loginHash = Hash(string);
+        let returnVal = null;
+        if(parameterName == 'PasswordHash'){
+        if(loginHash = hash){
+            console.log("Login Success");
+            returnVal = 0;
+        }else{
+            console.log("Login Fail");
+            returnVal = 1;
+        }
+        res.send({val:returnVal});
+        }
+    });
+    
+    
+    request1.on("requestCompleted", (req)=>{
         console.log("Success");
-        res.send({val:0});
+        //res.send({val:0});
     })
 
     
