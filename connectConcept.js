@@ -5,6 +5,7 @@ const { TYPES } = require('tedious');
 const { Salt, Hash } = require('./UserService');
 const app = express();
 
+
 app.use(express.json());
 app.use(express.static(__dirname));
 app.get('/', (req, res) => {
@@ -33,6 +34,30 @@ connection.on('connect', function(err) {
     } 
     console.log("Connected");  
 });
+
+let session = require('express-session');
+app.use(session({
+    secret: 'secret',
+    resave: false,
+    saveUninitialized: false,
+    cookie: { secure: 'auto' }
+    
+}));
+app.get("/Session", (req, res) => {
+    if(req.session.userID && req.session.userName) {
+      res.send(`Welcome, ${req.session.userName}`);
+    } else {
+      res.status(401).send("Not logged in");
+    }
+  });
+app.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+      if(err) {
+        return console.log(err);
+      }
+      res.redirect('/');
+    });
+  });
 
 app.get("/Con", (req, res)=>{
     connection.connect();
@@ -71,28 +96,46 @@ app.post("/Login", (req, res)=>{
     let username = req.body.username;
     let password = req.body.password;
     let pref = null;
+
     let request1 = new Request("GetPasswordInfo", (err)=>{
         if(err){
             console.log("Failed to Login");
             console.log(err);
         }
     })
+    let request2 = new Request("GetUserID", (err)=>{
+        if(err){
+            console.log("Failed to get userID");
+            console.log(err);
+        }
+    })
     request1.addParameter("userName", TYPES.VarChar, username);
     request1.addOutputParameter('PasswordSalt', TYPES.VarChar);
     request1.addOutputParameter('PasswordHash', TYPES.VarChar);
+    request1.addOutputParameter('UserID', TYPES.Int);
+
     connection.callProcedure(request1);
+    
     let salt = null;
     let hash = null;
+    let userID = null;
+
     request1.on('returnValue', function(parameterName, value, metadata) {
         console.log(parameterName + ' = ' + value);
         if(parameterName == 'PasswordSalt'){
             salt = value;
-        }else{
+        }else if (parameterName == 'PasswordHash'){
             hash = value;
+        }else
+        if(parameterName == 'UserID'){
+            userID = value;
+            
         }
         let string = password + salt;
         let loginHash = Hash(string);
         let returnVal = null;
+         req.session.userID = userID;
+         req.session.userName = username;
         if(parameterName == 'PasswordHash'){
         if(loginHash = hash){
             console.log("Login Success");
@@ -104,84 +147,153 @@ app.post("/Login", (req, res)=>{
         res.send({val:returnVal});
         }
     });
-    function getUserID(userName, callback) {
-        const request = new Request("GetUserID", (err) => {
-            if (err) {
-                console.error("Failed to execute procedure: ", err);
-                callback(err);
-                return;
-            }
-        });
     
-        request.addParameter('userName', TYPES.VarChar, userName);
-        let userID = null;
-        request.on("row", (columns) => {
-            userID = columns[0].value;
-        });
     
-        request.on("requestCompleted", () => {
-            callback(null, userID);
-        });
-    
-        connection.callProcedure(request);
-    }
-
-    app.post("/CreateJournal", (req, res) => {
-        const { userName, Name } = req.body;
-        getUserID(userName, (err, userID) => {
-            if (err) {
-                res.status(500).send("Error retrieving user ID");
-                return;
-            }
-            const request = new Request("CreateJournal", (err) => {
-                if (err) {
-                    console.error("Failed to execute procedure: ", err);
-                    res.status(500).send({ message: "Failed to create journal" });
-                    return;
-                }
-            });
-    
-            request.addParameter('userID', TYPES.Int, userID);
-            request.addParameter('userName', TYPES.VarChar, userName);
-            request.addParameter('Name', TYPES.VarChar,Name);
-    
-            request.on("requestCompleted", () => {
-                console.log("Journal created successfully");
-                res.send({ message: "Journal created successfully" });
-            });
-    
-            connection.callProcedure(request);
-        });
-    });
-    
-    app.post('/createBudget', (req, res) => {
-        const { budgetId, spendingLimit, userId } = req.body;
-    
-        const request = new Request('CreateBudget', (err) => {
-            if (err) {
-                console.error('Database request error:', err);
-                res.status(500).send('Failed to create budget entry');
-                return;
-            }
-            res.send('Budget entry created successfully');
-        });
-    
-        request.addParameter('budgetId', TYPES.Int, budgetId);
-        request.addParameter('spendingLimit', TYPES.VarChar, spendingLimit);
-
-        request.addParameter('UserID', TYPES.Int, userId);
-    
-        connection.callProcedure(request);
-    });
-
-    request1.on("requestCompleted", (req)=>{
-        console.log("Success");
+    request1.on("requestCompleted", ()=>{
+        console.log("Login Success");
+        req.session.userID = userID;
+        req.session.save();
         //res.send({val:0});
     })
-
+    
     
 })
 
+  app.post("/Journal", (req, res) => {
+      const  Name  = req.body.Name;
+      if (!Name) {
+          // Immediately return if name is not provided or is an invalid string
+          return res.status(400).send({ message: "Invalid input: Name is required." });
+        }
+        
+    const userID = req.session.userID;
+    console.log("userID:", userID);
+    console.log(req.body);
+    const userName = req.session.userName;
+        const request = new Request("CreateJournal", (err) => {
+            if (err) {
+                console.error("Failed to execute procedure: ", err);
+                res.status(500).send({ message: "Failed to create journal" });
+                return;
+            }
+        });
+        request.addParameter('userID', TYPES.Int, userID);
+        request.addParameter('userName', TYPES.VarChar, userName);
+        request.addParameter('Name', TYPES.VarChar, req.body.Name);
+
+        request.on("requestCompleted", () => {
+            console.log("Journal created successfully");
+            console.log("userID:", userID);
+            res.send({ message: "Journal created successfully" });
+        });
+
+        connection.callProcedure(request);
+    ;
+});
+app.post("/CreateBudget", (req, res) => {
+    const  Name  = req.body.Name;
+    const spendingLimit = req.body.spendingLimit;
+    userID = req.session.userID;
+    console.log("userID:", userID);
+    console.log(req.body);
+    const request = new Request("CreateBudget", (err) => {
+        if (err) {
+            console.error("Failed to execute procedure: ", err);
+            res.status(500).send({ message: "Failed to create budget" });
+            return;
+        }
+    });
+    request.addParameter('userID', TYPES.Int, userID);
+    request.addParameter('spendingLimit', TYPES.Float, spendingLimit);
+    request.addParameter('budgetName', TYPES.VarChar, Name);
+
+    request.on("requestCompleted", () => {
+        if (res.headersSent) return;
+        console.log("Budget created successfully");
+        console.log("userID:", userID);
+        res.send({ message: "Budget created successfully" });
+    });
+
+    connection.callProcedure(request);
+});
+
+app.post("/CreateExpense", (req, res) => {
+    const { currency, category, cost, budgetName } = req.body;
+    const userID = req.session.userID;
+  
+    // First, make sure all required inputs are present
+    if (!userID) {
+      return res.status(401).send({ message: "User is not logged in." });
+    }
+  
+    if (!currency || !category || !cost || !budgetName) {
+      return res.status(400).send({ message: "Missing required input." });
+    }
+   const searchBudgetID = (budgetName, callback) => {
+      let budgetID = null;
+  
+      const request = new Request("Search_Budget", (err) => {
+        if (err) {
+          console.error("Failed to search for budget: ", err);
+          return callback(err, null);
+        }
+      });
+  
+      request.addParameter('BudgetID', TYPES.Int, null);
+      request.addParameter('SpendingLimit', TYPES.Decimal, null);
+      request.addParameter('UserID', TYPES.Int, userID);
+      request.addParameter('Above_Below', TYPES.Binary, null); // Assuming Above_Below is not needed for this search
+  
+      
+      request.on('row', (columns) => {
+        columns.forEach((column) => {
+          if (column.metadata.colName === 'BudgetID') {
+            budgetID = column.value;
+          }
+        });
+      });
+  
+      request.on("requestCompleted", () => {
+        return callback(null, budgetID);
+      });
+  
+      connection.callProcedure(request);
+    };
+  
+    // Now we search for the budget ID
+    searchBudgetID(budgetName, (err, foundBudgetID) => {
+      if (err) {
+        return res.status(500).send({ message: "Error searching for budget." });
+      }
+      if (!foundBudgetID) {
+        return res.status(404).send({ message: "Budget not found." });
+      }
+  
+      // Now we have the budget ID, we can create the expense
+      const request = new Request("CreateExpense", (err) => {
+        if (err) {
+          console.error("Failed to create expense: ", err);
+          return res.status(500).send({ message: "Failed to create expense." });
+        }
+      });
+  
+      // Add the parameters for the CreateExpense stored procedure
+      request.addParameter('currency', TYPES.VarChar, currency);
+      request.addParameter('category', TYPES.VarChar, category);
+      request.addParameter('cost', TYPES.Decimal, cost);
+      request.addParameter('userID', TYPES.Int, userID);
+      request.addParameter('budgetID', TYPES.Int, foundBudgetID);
+  
+      request.on("requestCompleted", () => {
+        console.log("Expense created successfully for Budget ID: ", foundBudgetID);
+        //res.send({ message: "Expense created successfully." });
+      });
+  
+      connection.callProcedure(request);
+    });
+  });
+
+  
 app.listen(3001, ()=>{
     console.log("Port Open")
 })

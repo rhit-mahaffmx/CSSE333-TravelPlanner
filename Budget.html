@@ -11,21 +11,59 @@
         <h1>Create New budget</h1>
         <form id="limitForm">
             <div>
+                <label for="budgetName">Budget Name:</label>
+                <input type="text" id="budgetName" placeholder="Enter budget name" required>
+            </div>
+
+            <div>
                 <label for="limit">Spending Limit:</label>
                 <input type="number" id="limit" placeholder="Enter limit" required>
             </div>
            
-            <button type="submit">Set Limit</button>
+            <button type="submit">Create Budget</button>
+            <button type="button" id="viewBudgets">View Budgets</button>
+     
             <button id="goBack">Go Back</button>
         </form>
         <ul id="limitList"></ul>
     </div>
- 
+    <script>
+    document.getElementById('viewBudgets').addEventListener('click', function() {
+        window.location.href = 'BudgetManagement.html';
+    }); 
+    document.getElementById('limitForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+    
+        const budgetName = document.getElementById('budgetName').value;
+        const limit = parseFloat(document.getElementById('limit').value);
+       
+    
+        fetch('/createBudget', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                Name: budgetName,
+                spendingLimit: limit,
+            
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            alert('Budget created successfully!');
+        })
+        .catch(error => console.error('Error:', error));
+
+       
+    });
+    </script>
     <script>
         document.getElementById('goBack').addEventListener('click', function() {
             window.location.href = 'landingPage.html'; // Replace with your landing page URL
         });
     </script>
-    <script src="spendingLimit.js"></script>
+    <script src="connectConcept.js"></script>
 </body>
 </html>

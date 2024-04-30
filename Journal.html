@@ -17,16 +17,14 @@
         <script>
             document.getElementById('journal-form').addEventListener('submit', function(event) {
                 event.preventDefault();
-                const Name = document.getElementById('journalName').value;
-                fetch("/CreateJournal", {
+                const journalName = document.getElementById('journalName').value;
+                fetch("/Journal", {
                     method: "POST",
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        userID: 5, 
-                       // userName: getUserName(), 
-                        Name: Name
+                        Name: journalName
                     })
                 }).then(response => response.json())
                 .then(data => {

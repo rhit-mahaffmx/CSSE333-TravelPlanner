@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Management</title>
+</head>
+<body>
+    <h1>Budget Management</h1>
+
+    <div id="budgetDetails">
+        <h2>Budget: <span id="budgetName">Loading...</span></h2>
+        <h3>Spending Limit: <span id="spendingLimit">0</span></h3>
+    </div>
+    
+    <h2>Expenses</h2>
+    <ul id="expenseList">
+    </ul>
+
+    <h2>Add Expense</h2>
+    <form id="expenseForm">
+        <label for="currency">Currency:</label>
+        <input type="text" id="currency" name="currency" required><br><br>
+
+        <label for="category">Category:</label>
+        <input type="text" id="category" name="category" required><br><br>
+
+        <label for="cost">Cost:</label>
+        <input type="number" id="cost" name="cost" step="0.01" required><br><br>
+
+        <input type="submit" value="Add Expense">
+    </form>
+    
+    <script src="app.js"></script>
+    <script src="connectConcept.js"></script>   
+    <script>document.getElementById('expenseForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+    
+        const currency = document.getElementById('currency').value;
+        const category = document.getElementById('category').value;
+        const cost = document.getElementById('cost').value;
+    
+        fetch('/CreateExpense', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                currency: currency,
+                category: category,
+                cost: cost,
+                budgetName: document.getElementById('budgetName').textContent // Assuming budget name is stored in the span
+            })
+        }).then(response => response.json())
+          .then(data => {
+              alert(data.message);
+              if (data.message === "Expense created successfully.") {
+                  // Optionally reload expenses or add to the list without reloading
+                  loadExpenses(); // You need to define this function to refresh or append to the expense list
+              }
+          })
+          .catch(error => console.error('Error:', error));
+    });
+    </script>
+</body>
+</html>
