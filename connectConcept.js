@@ -162,7 +162,7 @@ app.post("/Login", (req, res)=>{
   app.post("/Journal", (req, res) => {
       const  Name  = req.body.Name;
       if (!Name) {
-          // Immediately return if name is not provided or is an invalid string
+        
           return res.status(400).send({ message: "Invalid input: Name is required." });
         }
         
@@ -221,7 +221,7 @@ app.post("/CreateExpense", (req, res) => {
     const { currency, category, cost, budgetName } = req.body;
     const userID = req.session.userID;
   
-    // First, make sure all required inputs are present
+
     if (!userID) {
       return res.status(401).send({ message: "User is not logged in." });
     }
@@ -260,7 +260,7 @@ app.post("/CreateExpense", (req, res) => {
       connection.callProcedure(request);
     };
   
-    // Now we search for the budget ID
+
     searchBudgetID(budgetName, (err, foundBudgetID) => {
       if (err) {
         return res.status(500).send({ message: "Error searching for budget." });
@@ -269,7 +269,7 @@ app.post("/CreateExpense", (req, res) => {
         return res.status(404).send({ message: "Budget not found." });
       }
   
-      // Now we have the budget ID, we can create the expense
+
       const request = new Request("CreateExpense", (err) => {
         if (err) {
           console.error("Failed to create expense: ", err);
@@ -277,7 +277,6 @@ app.post("/CreateExpense", (req, res) => {
         }
       });
   
-      // Add the parameters for the CreateExpense stored procedure
       request.addParameter('currency', TYPES.VarChar, currency);
       request.addParameter('category', TYPES.VarChar, category);
       request.addParameter('cost', TYPES.Decimal, cost);
@@ -292,8 +291,27 @@ app.post("/CreateExpense", (req, res) => {
       connection.callProcedure(request);
     });
   });
-
   
+  app.post('/api/journals', (req, res) => {
+    const userID  = req.session.userID;
+    const request = new Request('GetJournals', (err, rowCount, rows) => {
+        if (err) {
+            console.error('Error fetching journals:', err);
+            return res.status(500).send('Failed to retrieve journals');
+        }
+
+        
+        const journals = rows.map(row => ({
+            journalID: row.JournalID.value,
+            name: row.Name.value
+        }));
+        res.json(journals);
+    });
+
+   
+    request.addParameter('UserID', TYPES.Int, userID);
+    connection.callProcedure(request);
+});
 app.listen(3001, ()=>{
     console.log("Port Open")
 })
