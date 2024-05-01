@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Create Travel Plans</title>
+</head>
+<body>
+    <h1>Create Travel Plans</h1>
+    <form id="itinerary-form">
+        <label for="destinationID">Destination ID:</label>
+        <input type="text" id="destinationID" name="destinationID" required><br><br>
+        
+        <label for="itinerary">Itinerary:</label>
+        <textarea id="itinerary" name="itinerary" required></textarea><br><br>
+
+        <label for="localEmergencyContacts">Local Emergency Contacts:</label>
+        <textarea id="localEmergencyContacts" name="localEmergencyContacts" required></textarea><br><br>
+
+        <input type="submit" value="Create Itinerary">
+    </form>
+    <p id="message"></p>
+
+    <button id="goBack">Go Back</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle form submission
+            document.getElementById('itinerary-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const destinationID = document.getElementById('destinationID').value;
+                const itinerary = document.getElementById('itinerary').value;
+                const localEmergencyContacts = document.getElementById('localEmergencyContacts').value;
+
+                fetch('/create-travel-plans', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        destinationID: destinationID,
+                        itinerary: itinerary,
+                        localEmergencyContacts: localEmergencyContacts
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('message').innerText = data.message || 'travel plans created successfully!';
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('message').innerText = 'Error creating travel plans.';
+                });
+            });
+
+            // Handle Go Back button
+            document.getElementById('goBack').addEventListener('click', function() {
+                window.location.href = 'landingPage.html'; 
+            });
+        });
+    </script>
+</body>
+</html>

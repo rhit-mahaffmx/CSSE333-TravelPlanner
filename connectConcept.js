@@ -292,7 +292,7 @@ app.post("/CreateExpense", (req, res) => {
     });
   });
   
-  app.post('/api/journals', (req, res) => {
+  app.post('/journals', (req, res) => {
     const userID  = req.session.userID;
     const request = new Request('GetJournals', (err, rowCount, rows) => {
         if (err) {
@@ -312,6 +312,31 @@ app.post("/CreateExpense", (req, res) => {
     request.addParameter('UserID', TYPES.Int, userID);
     connection.callProcedure(request);
 });
+
+//wait on destination data to test
+app.post('/create-travel-plans', (req, res) => {
+    const { destinationID, itinerary, localEmergencyContacts } = req.body;
+    const userID = req.session.userID; 
+    if (!userID || !destinationID) {
+        return res.status(400).json({ message: 'UserID and DestinationID are required.' });
+    }
+
+    const request = new Request('CreateTravelPlan', (err) => {
+        if (err) {
+            console.error('Error creating itinerary:', err);
+            return res.status(500).json({ message: 'Failed to create itinerary.' });
+        }
+        res.json({ message: 'Itinerary created successfully!' });
+    });
+
+    request.addParameter('UserID', TYPES.Int, userID);
+    request.addParameter('DestinationID', TYPES.VarChar, destinationID);
+    request.addParameter('Itinerary', TYPES.VarChar, itinerary);
+    request.addParameter('LocalEmergencyContacts', TYPES.VarChar, localEmergencyContacts);
+
+    connection.callProcedure(request);
+});
+
 app.listen(3001, ()=>{
     console.log("Port Open")
 })
