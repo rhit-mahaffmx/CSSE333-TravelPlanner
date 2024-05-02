@@ -158,8 +158,7 @@ app.post("/Login", (req, res)=>{
     
     
 })
-
-  app.post("/Journal", (req, res) => {
+app.post("/Journal", (req, res) => {
       const  Name  = req.body.Name;
       if (!Name) {
         
@@ -179,7 +178,7 @@ app.post("/Login", (req, res)=>{
         });
         request.addParameter('userID', TYPES.Int, userID);
         request.addParameter('userName', TYPES.VarChar, userName);
-        request.addParameter('Name', TYPES.VarChar, req.body.Name);
+        request.addParameter('Name', TYPES.VarChar, Name);
 
         request.on("requestCompleted", () => {
             console.log("Journal created successfully");
@@ -216,7 +215,6 @@ app.post("/CreateBudget", (req, res) => {
 
     connection.callProcedure(request);
 });
-
 app.post("/CreateExpense", (req, res) => {
     const { currency, category, cost, budgetName } = req.body;
     const userID = req.session.userID;
@@ -291,29 +289,32 @@ app.post("/CreateExpense", (req, res) => {
       connection.callProcedure(request);
     });
   });
-  
-  app.post('/journals', (req, res) => {
+app.post('/journals', (req, res) => {
+    
     const userID  = req.session.userID;
     const request = new Request('GetJournals', (err, rowCount, rows) => {
         if (err) {
             console.error('Error fetching journals:', err);
             return res.status(500).send('Failed to retrieve journals');
         }
-
-        
-        const journals = rows.map(row => ({
-            journalID: row.JournalID.value,
-            name: row.Name.value
-        }));
-        res.json(journals);
+        console.log('journals api called');
+       return rows;
     });
 
    
     request.addParameter('UserID', TYPES.Int, userID);
+    request.addOutputParameter('JournalName', TYPES.VarChar);
+
+    request.on('returnValue', (parameterName, value, metadata) => {
+        
+        
+        console.log('value:', value);
+        res.json(JSON.parse(value));
+    });
     connection.callProcedure(request);
+    
 });
 
-//wait on destination data to test
 app.post('/create-travel-plans', (req, res) => {
     const { destinationID, itinerary, localEmergencyContacts } = req.body;
     const userID = req.session.userID; 

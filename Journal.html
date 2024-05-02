@@ -38,15 +38,20 @@
                 fetch('/journals', {
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ userID: 1 }) 
+                    body: JSON.stringify({ userID: 5 }) 
                 })
                 .then(response => response.json())
                 .then(journals => {
+                    console.log(journals[0]);
                     const journalsList = document.getElementById('journalsList');
                     journalsList.innerHTML = '';
+
                     journals.forEach(journal => {
                         const item = document.createElement('li');
-                        item.textContent = journal.name;
+                        item.textContent = journal.Name;
+                        item.onclick = function() {
+                            window.location.href = '/journal/' + journal.ID;
+                        };
                         journalsList.appendChild(item);
                     });
                 })
