@@ -5,7 +5,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     document.getElementById('budget-btn').addEventListener('click', function() {
         window.location.href = '/Budget.html'; 
-
-  
+    });
+    document.getElementById('travelPlan-btn').addEventListener('click', function() {
+        window.location.href = 'TravelPlanner.html'; 
     });
 });
