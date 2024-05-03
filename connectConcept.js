@@ -188,7 +188,7 @@ app.post("/Journal", (req, res) => {
         connection.callProcedure(request);
     ;
 });
-app.post("/Review", (req, res) => {
+app.post("/createReview", (req, res) => {
     const  Text  = req.body.Text;
     const  Rating  = req.body.Rating;
     const  Destination  = req.body.Destination;
@@ -342,6 +342,29 @@ app.post('/journals', (req, res) => {
    
     request.addParameter('UserID', TYPES.Int, userID);
     request.addOutputParameter('JournalName', TYPES.VarChar);
+
+    request.on('returnValue', (parameterName, value, metadata) => {
+
+        res.json(JSON.parse(value));
+    });
+    connection.callProcedure(request);
+    
+});
+app.post('/getReviews', (req, res) => {
+    console.log("test");
+    const userID  = req.session.userID;
+    const request = new Request('GetReviews', (err, rowCount, rows) => {
+        if (err) {
+            console.error('Error fetching reviews:', err);
+            return res.status(500).send('Failed to retrieve reviews');
+        }
+        console.log('journals api called');
+       return rows;
+    });
+
+   
+    request.addParameter('UserID', TYPES.Int, userID);
+    request.addOutputParameter('ReviewText', TYPES.VarChar);
 
     request.on('returnValue', (parameterName, value, metadata) => {
 
