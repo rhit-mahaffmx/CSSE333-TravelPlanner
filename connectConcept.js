@@ -455,8 +455,6 @@ app.post('/journalEntry', (req, res) => {
     connection.callProcedure(request);
 });
 
-
-
 app.post('/create-travel-plans', (req, res) => {
     const { destinationID, itinerary, localEmergencyContacts } = req.body;
     const userID = req.session.userID; 
@@ -477,6 +475,27 @@ app.post('/create-travel-plans', (req, res) => {
     request.addParameter('Itinerary', TYPES.VarChar, itinerary);
     request.addParameter('LocalEmergencyContacts', TYPES.VarChar, localEmergencyContacts);
 
+    connection.callProcedure(request);
+});
+
+app.post('/destinations', (req, res) => {
+    const destinationID = parseInt(req.body.DestinationID, 10);
+    const request = new Request('GetDestinations', (err, rowCount, rows) => {
+        if (err) {
+            console.error('Error fetching destinations:', err);
+            return res.status(500).send('Failed to retrieve destinations');
+        }
+        console.log('destinations api called');
+       return rows;
+    });
+ 
+    request.addParameter('DestinationID', TYPES.Int, journalID);
+    request.addOutputParameter('Language', TYPES.VarChar);
+ 
+    request.on('returnValue', (parameterName, value, metadata) => {
+        console.log(value);
+        res.json(JSON.parse(value));
+    });
     connection.callProcedure(request);
 });
 
