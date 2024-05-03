@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destinations</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>All Destinations</h1>
+        <ul id="destinationList"></ul>
+        <button id="goBack">Go Back</button>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+            fetchDestinations();
+
+            function fetchDestinations() {
+                fetch('/destinations', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                })
+                .then(response => response.json())
+                .then(destinations => {
+                    const destinationList = document.getElementById('destinationList');
+                    destinationList.innerHTML = ''; 
+                    destinations.forEach(destination => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `${destination.Name}`;
+                        destinationList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching destinations:', error));
+            }
+    });
+    </script>
+
+    <script>
+        document.getElementById('goBack').addEventListener('click', function() {
+            window.location.href = 'landingPage.html'; // Replace with your landing page URL
+        });
+    </script>
+    <script src="connectConcept.js"></script>
+</body>
+</html>

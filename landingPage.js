@@ -9,6 +9,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('travelPlan-btn').addEventListener('click', function() {
         window.location.href = 'TravelPlanner.html'; 
     });
+    document.getElementById('destination-btn').addEventListener('click', function() {
+        window.location.href = 'Destination.html'; 
+    });
     document.getElementById('review-btn').addEventListener('click', function() {
         window.location.href = 'Reviews.html'; 
     });
