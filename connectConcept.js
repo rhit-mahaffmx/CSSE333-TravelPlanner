@@ -121,7 +121,6 @@ app.post("/Login", (req, res)=>{
     let userID = null;
 
     request1.on('returnValue', function(parameterName, value, metadata) {
-        console.log(parameterName + ' = ' + value);
         if(parameterName == 'PasswordSalt'){
             salt = value;
         }else if (parameterName == 'PasswordHash'){
@@ -137,7 +136,10 @@ app.post("/Login", (req, res)=>{
          req.session.userID = userID;
          req.session.userName = username;
         if(parameterName == 'PasswordHash'){
-        if(loginHash = hash){
+            console.log('salt' + ' = ' + salt);
+            console.log('string' + ' = ' + string);
+            console.log('hash' + ' = ' + loginHash);
+        if(loginHash == hash){
             console.log("Login Success");
             returnVal = 0;
         }else{
