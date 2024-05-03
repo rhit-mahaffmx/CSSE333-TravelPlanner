@@ -504,18 +504,19 @@ app.get('/plan/:planID', (req, res) => {
     });
     console.log('planID:', planID);
     request.addParameter('PlanID', TYPES.Int, planID);
-    request.addOutputParameter('Plan', TYPES.VarChar, 100000);
-    request.on('returnValue', (parameterName, value, metadata) => {
-        console.log('Value:', value);
-        console.log(parameterName + ' = ' + value); 
+    request.addOutputParameter('Plan', TYPES.VarChar, { length: 'MAX' }); 
+    request.on('returnValue', (parameterName, value) => {
+        console.log(`Plan received from SQL: ${value}`); 
         try {
             const parsedValue = JSON.parse(value);
             res.json(parsedValue);
         } catch (error) {
-            console.error('Failed to parse value:', error);
-            res.status(500).json({ message: 'Failed to parse value' });
+            console.error('Failed to parse JSON:', error);
+            res.status(500).json({ message: 'Failed to parse JSON' });
         }
     });
+    
+    
     connection.callProcedure(request);
 });
 

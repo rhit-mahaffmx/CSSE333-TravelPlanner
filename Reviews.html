@@ -36,7 +36,9 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    //function call here
+                    console.log(data);
+                 
+                    fetchReviews();
                 })
                 .catch(error => console.error('Error:', error));
             });

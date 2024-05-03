@@ -30,7 +30,36 @@
     </div>
     <script>
     document.addEventListener('DOMContentLoaded', function() {
+            
+        document.getElementById('limitForm').addEventListener('submit', function(event) {
+        event.preventDefault();
+    
+        const budgetName = document.getElementById('budgetName').value;
+        const limit = parseFloat(document.getElementById('limit').value);
+       
+    
+        fetch('/createBudget', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                Name: budgetName,
+                spendingLimit: limit,
+            
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log(data);
+            alert('Budget created successfully!');
             fetchBudgets();
+        })
+        .catch(error => console.error('Error:', error));
+
+        
+    });
+      
 
             function fetchBudgets() {
                 fetch('/budgets', {
@@ -56,40 +85,11 @@
             }
             
             fetchBudgets();
+            document.getElementById('goBack').addEventListener('click', function() {
+            window.location.href = 'landingPage.html'; 
         });
-
-    document.getElementById('limitForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-    
-        const budgetName = document.getElementById('budgetName').value;
-        const limit = parseFloat(document.getElementById('limit').value);
-       
-    
-        fetch('/createBudget', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                Name: budgetName,
-                spendingLimit: limit,
-            
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            alert('Budget created successfully!');
-        })
-        .catch(error => console.error('Error:', error));
-
-       
-    });
-    </script>
-    <script>
-        document.getElementById('goBack').addEventListener('click', function() {
-            window.location.href = 'landingPage.html'; // Replace with your landing page URL
         });
+       
     </script>
     <script src="connectConcept.js"></script>
 </body>
