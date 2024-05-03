@@ -19,17 +19,22 @@
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
-            const journalID = urlParams.get('JournalID');
-
+            const journalID = urlParams.get('journalID');
+            console.log(journalID);
             if (journalID) {
-                fetch(`/journal/${journalID}`)
+                fetch(`/getEntries`,{
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ JournalID: parseInt(journalID)})
+                })
                     .then(response => response.json())
-                    .then(journal => {
-                        document.getElementById('journal-title').innerText = `Journal ${journal.JournalID}`;
+                    .then(data => {
+                        document.getElementById('journal-title').innerText = 'Journal ' + journalID;
                         const entriesList = document.getElementById('journal-entries');
-                        journal.entries.forEach(entry => {
+                        data.forEach(entry => {
+                            console.log(entry.value);
                             const listItem = document.createElement('li');
-                            listItem.innerText = `${entry.dateTime}: ${entry.entryText}`;
+                            listItem.innerText = entry.EntryText;
                             entriesList.appendChild(listItem);
                         });
                     })
@@ -48,7 +53,7 @@
                 .then(data => {
                    
                     const listItem = document.createElement('li');
-                    listItem.innerText = `${data.dateTime}: ${data.entryText}`;
+                    listItem.innerText = `${data.entryText}`;
                     const entriesList = document.getElementById('journal-entries');
                     entriesList.appendChild(listItem);
                     // Clear the input field
@@ -57,10 +62,13 @@
                 .catch(error => console.error('Error adding entry:', error));
             });
 
+            
             document.getElementById('goBack').addEventListener('click', function() {
                 window.location.href = 'landingPage.html';
             });
         });
     </script>
 </body>
+
+<scrip src="connectConcept.js"></script>
 </html>

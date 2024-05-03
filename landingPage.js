@@ -9,4 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('travelPlan-btn').addEventListener('click', function() {
         window.location.href = 'TravelPlanner.html'; 
     });
+    document.getElementById('review-btn').addEventListener('click', function() {
+        window.location.href = 'Reviews.html'; 
+    });
 });

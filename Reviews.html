@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title> \Journals</title>
+</head>
+<body>
+    <h1>Review</h1>
+    <form id="review-form">
+        <label for="ReviewText">Review Text:</label>
+        <input type="text" id="reviewText" name="reviewText" required><br><br>
+        <label for="DestinationID">Destination:</label>
+        <input type="text" id="destination" name="destination" required><br><br>
+        <label for="StarRating">Star Rating:</label>
+        <input type="text" id="starRating" name="starRating" required><br><br>
+        <input type="submit" value="Create Review">
+    </form>
+
+    <h2>Your Reviews</h2>
+    <ul id="reviewsList"></ul>
+
+    <button id="goBack">Go Back</button>
+
+    <script type="text/javascript">
+    
+    
+        document.addEventListener('DOMContentLoaded', function() {
+            document.getElementById('review-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const reviewText = document.getElementById('reviewText').value;
+                const destination = document.getElementById('destination').value;
+                const starRating = document.getElementById('starRating').value;
+                fetch('/Review', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ Text: reviewText, Destination: destination, Rating: starRating })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    //function call here
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+  
+            
+
+           
+            document.getElementById('goBack').addEventListener('click', function() {
+                window.location.href = 'landingPage.html'; 
+            });
+        });
+    </script>
+</body>
+</html>

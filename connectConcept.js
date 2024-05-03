@@ -136,9 +136,6 @@ app.post("/Login", (req, res)=>{
          req.session.userID = userID;
          req.session.userName = username;
         if(parameterName == 'PasswordHash'){
-            console.log('salt' + ' = ' + salt);
-            console.log('string' + ' = ' + string);
-            console.log('hash' + ' = ' + loginHash);
         if(loginHash == hash){
             console.log("Login Success");
             returnVal = 0;
@@ -152,7 +149,7 @@ app.post("/Login", (req, res)=>{
     
     
     request1.on("requestCompleted", ()=>{
-        console.log("Login Success");
+        //console.log("Login Success");
         req.session.userID = userID;
         req.session.save();
         //res.send({val:0});
@@ -190,6 +187,46 @@ app.post("/Journal", (req, res) => {
 
         connection.callProcedure(request);
     ;
+});
+app.post("/Review", (req, res) => {
+    const  Text  = req.body.Text;
+    const  Rating  = req.body.Rating;
+    const  Destination  = req.body.Destination;
+    if (!Rating) {
+      
+        return res.status(400).send({ message: "Invalid input: Rating is required." });
+    }
+    if (!Destination) {
+      
+        return res.status(400).send({ message: "Invalid input: Destination is required." });
+    }
+    if (!Text) {
+      
+        return res.status(400).send({ message: "Invalid input: Review cannot be empty." });
+    }
+      
+  const userID = req.session.userID;
+  console.log("userID:", userID);
+      const request = new Request("CreateReview", (err) => {
+          if (err) {
+              console.error("Failed to execute procedure: ", err);
+              res.status(500).send({ message: "Failed to create review" });
+              return;
+          }
+      });
+      request.addParameter('UserID', TYPES.Int, userID);
+      request.addParameter('DestinationID', TYPES.VarChar, Destination);
+      request.addParameter('StarRating', TYPES.VarChar, Rating);
+      request.addParameter('ReviewText', TYPES.VarChar, Text);
+
+      request.on("requestCompleted", () => {
+          console.log("Review created successfully");
+          console.log("userID:", userID);
+          res.send({ message: "Review created successfully" });
+      });
+
+      connection.callProcedure(request);
+  ;
 });
 app.post("/CreateBudget", (req, res) => {
     const  Name  = req.body.Name;
@@ -339,49 +376,83 @@ app.get('/budgets', (req, res) => {
 });
 
 
-app.get('/journal/:journalID', (req, res) => {
-    const journalID = parseInt(req.params.journalID, 10);
-
+app.post('/getEntries', (req, res) => {
+    const journalID = parseInt(req.body.JournalID, 10);
     const request = new Request('GetJournalWithEntries', (err, rowCount, rows) => {
         if (err) {
-            console.error('Error fetching journal:', err);
-            return res.status(500).send('Failed to retrieve journal');
+            console.error('Error fetching journals:', err);
+            return res.status(500).send('Failed to retrieve journals');
         }
-
-        const journal = { journalID, entries: [] };
-        rows.forEach(row => {
-            const entry = {
-                entryID: row.EntryID.value,
-                entryText: row.EntryText.value,
-                dateTime: row.DateTime.value
-            };
-            journal.entries.push(entry);
-        });
-
-        res.json(journal);
+        console.log('journals api called');
+       return rows;
     });
 
+   
     request.addParameter('JournalID', TYPES.Int, journalID);
+    request.addOutputParameter('EntryText', TYPES.VarChar);
+
+    request.on('returnValue', (parameterName, value, metadata) => {
+        console.log(value);
+        res.json(JSON.parse(value));
+    });
     connection.callProcedure(request);
+    // const journalID = parseInt(req.body.JournalID, 10);
+    // console.log(journalID);
+    // const request = new Request("SELECT EntryID, EntryText, [DateTime] FROM Written_Entries WHERE JournalID = " + journalID + ";", (err, rowCount, rows) => {
+    // //new Request('GetJournalWithEntries', (err, rowCount, rows) => {
+    //     if (err) {
+    //         console.error('Error fetching journals:', err);
+    //         return res.status(500).send('Failed to retrieve journals');
+    //     }
+    //     console.log('journals api called');       
+    // });
+    // request.addParameter('JournalID', TYPES.Int, journalID);
+    // let rows = [];
+    // request.on('row',function(columns){
+    //     rows.push({
+    //         "id":columns[1].value,
+    //         "text":columns[2].value,
+    //         "date":columns[3].value
+    //     });
+    //     console.log("test");
+    //     console.log(rows[1].id);
+    // });
+    // request.on('returnValue', (parameterName, value, metadata) => {
+        
+    // });
+    // const journal = [];
+    //     rows.forEach(row => {
+    //         const entry = {
+    //             entryID: row.EntryID.value,
+    //             entryText: row.EntryText.value,
+    //             dateTime: row.DateTime.value
+    //         };
+    //         journal.push(entry);
+    //     });
+    //     journal.forEach(entry => {
+    //         console.log(entry.entryID);
+    //     });
+    //     res.json(journal);
+    //connection.callProcedure(request);
 });
 
-// app.post('/journalEntry', (req, res) => {
-//     const { JournalID, EntryText } = req.body;
-//     console.log(JournalID);
-//     const request = new Request('CreateWrittenEntry', (err) => {
-//         if (err) {
-//             console.error('Error creating entry:', err);
-//             return res.status(500).send('Failed to create entry');
-//         }
-//         // Sending a response with newly added entry details
-//         res.json({ journalID: JournalID, entryText: EntryText, dateTime: new Date() });
-//     });
+app.post('/journalEntry', (req, res) => {
+    const { JournalID, EntryText } = req.body;
+    console.log(JournalID);
+    console.log('journalID');
+    const request = new Request('CreateWrittenEntry', (err) => {
+        if (err) {
+            console.error('Error creating entry:', err);
+            return res.status(500).send('Failed to create entry');
+        }
+        // Sending a response with newly added entry details
+        res.json({ journalID: JournalID, entryText: EntryText, dateTime: new Date() });
+    });
+    request.addParameter('JournalID', TYPES.Int, JournalID);
+    request.addParameter('EntryText', TYPES.Text, EntryText);
 
-//     request.addParameter('JournalID', TYPES.Int, 1);
-//     request.addParameter('EntryText', TYPES.Text, EntryText);
-
-//     connection.callProcedure(request);
-// });
+    connection.callProcedure(request);
+});
 
 
 
