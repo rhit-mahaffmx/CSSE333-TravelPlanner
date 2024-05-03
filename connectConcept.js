@@ -540,10 +540,14 @@ app.get('/plans', (req, res) => {
     request.addParameter('UserID', TYPES.Int, userID);
     request.addOutputParameter('TravelPlanName', TYPES.VarChar);
     request.on('returnValue', (parameterName, value, metadata) => {
-
+        
+        res.json(JSON.parse(value));
+    });
+    connection.callProcedure(request);
+});
 
 app.post('/destinations', (req, res) => {
-    const destinationID = parseInt(req.body.DestinationID, 10);
+  
     const request = new Request('GetDestinations', (err, rowCount, rows) => {
         if (err) {
             console.error('Error fetching destinations:', err);
@@ -553,13 +557,13 @@ app.post('/destinations', (req, res) => {
        return rows;
     });
  
-    request.addParameter('DestinationID', TYPES.Int, journalID);
-    request.addOutputParameter('Language', TYPES.VarChar);
+   
  
     request.on('returnValue', (parameterName, value, metadata) => {
         console.log(value);
         res.json(JSON.parse(value));
     });
+    request.addOutputParameter('DestinationName', TYPES.VarChar);
     connection.callProcedure(request);
 });
 

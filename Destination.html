@@ -19,11 +19,12 @@
 
             function fetchDestinations() {
                 fetch('/destinations', {
-                    method: 'GET',
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                 })
                 .then(response => response.json())
                 .then(destinations => {
+                    console.log(destinations);
                     const destinationList = document.getElementById('destinationList');
                     destinationList.innerHTML = ''; 
                     destinations.forEach(destination => {
