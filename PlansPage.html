@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Travel Plan Details</title>
+</head>
+<body>
+    <h1 id="plan-title">Travel Plan</h1>
+    
+    <h2>Destination ID: <span id="destination-id"></span></h2>
+    <h2>Travel Plan Name: <span id="travel-plan-name"></span></h2>
+    <h3>Itinerary:</h3>
+    <p id="itinerary"></p>
+    <h3>Local Emergency Contacts:</h3>
+    <p id="emergency-contacts"></p>
+
+    <button id="goBack">Go Back</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const planID = urlParams.get('planID');
+            console.log('Plan ID:', planID);
+            if (planID) {
+                console.log('Fetching plan...');
+                fetch(`/plan/${planID}`)
+                    .then(response => response.json())
+                    .then(plan => {
+                        console.log('Plan fetched:', plan);
+                        document.getElementById('plan-title').innerText = `Travel Plan ${planID}`;
+                        document.getElementById('destination-id').innerText = plan.DestinationID;
+                        document.getElementById('travel-plan-name').innerText = plan.TravelPlanName;
+                        document.getElementById('itinerary').innerText = plan.Itinerary;
+                        document.getElementById('emergency-contacts').innerText = plan.LocalEmergencyContacts;
+                    })
+                    .catch(error => console.error('Error fetching plan:', error));
+            }
+
+            document.getElementById('goBack').addEventListener('click', function() {
+                window.location.href = 'landingPage.html';
+            });
+        });
+    </script>
+</body>
+</html>
