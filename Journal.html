@@ -17,6 +17,8 @@
     <button id="goBack">Go Back</button>
 
     <script type="text/javascript">
+    
+    
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('journal-form').addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -50,7 +52,8 @@
                         const item = document.createElement('li');
                         item.textContent = journal.Name;
                         item.onclick = function() {
-                            window.location.href = '/journal/' + journal.ID;
+                            
+                            window.location.href = `/journalPage.html?journalID=${journal.JournalID}`;
                         };
                         journalsList.appendChild(item);
                     });
@@ -58,12 +61,16 @@
                 .catch(error => console.error('Error fetching journals:', error));
             }
 
-            
+            function navigateToJournal(journalID) {
+                const params = new URLSearchParams();
+                params.set('journalID', journalID);
+                window.location.href = 'journalPage.html?' + params.toString();
+            }
             fetchJournals();
 
            
             document.getElementById('goBack').addEventListener('click', function() {
-                window.location.href = 'landingPage.html'; // Adjust this to your actual landing page URL
+                window.location.href = 'landingPage.html'; 
             });
         });
     </script>

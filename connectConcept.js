@@ -240,8 +240,7 @@ app.post("/CreateExpense", (req, res) => {
       request.addParameter('BudgetID', TYPES.Int, null);
       request.addParameter('SpendingLimit', TYPES.Decimal, null);
       request.addParameter('UserID', TYPES.Int, userID);
-      request.addParameter('Above_Below', TYPES.Binary, null); // Assuming Above_Below is not needed for this search
-  
+      request.addParameter('Above_Below', TYPES.Binary, null); 
       
       request.on('row', (columns) => {
         columns.forEach((column) => {
@@ -306,14 +305,84 @@ app.post('/journals', (req, res) => {
     request.addOutputParameter('JournalName', TYPES.VarChar);
 
     request.on('returnValue', (parameterName, value, metadata) => {
-        
-        
-        console.log('value:', value);
+
         res.json(JSON.parse(value));
     });
     connection.callProcedure(request);
     
 });
+app.get('/budgets', (req, res) => {
+    const userID = req.session.userID; // Assuming userID is stored in session
+
+    if (!userID) {
+        return res.status(401).send('User not authenticated');
+    }
+
+    const request = new Request('GetBudgets', (err, rowCount, rows) => {
+        if (err) {
+            console.error('Error fetching budgets:', err);
+            return res.status(500).send('Failed to retrieve budgets');
+        }
+
+        const budgets = rows.map(row => ({
+            BudgetID: row.BudgetID.value,
+            Name: row.Name.value,
+            SpendingLimit: row.SpendingLimit.value
+        }));
+
+        res.json(budgets);
+    });
+
+    request.addParameter('UserID', TYPES.Int, userID);
+    connection.callProcedure(request);
+});
+
+
+app.get('/journal/:journalID', (req, res) => {
+    const journalID = parseInt(req.params.journalID, 10);
+
+    const request = new Request('GetJournalWithEntries', (err, rowCount, rows) => {
+        if (err) {
+            console.error('Error fetching journal:', err);
+            return res.status(500).send('Failed to retrieve journal');
+        }
+
+        const journal = { journalID, entries: [] };
+        rows.forEach(row => {
+            const entry = {
+                entryID: row.EntryID.value,
+                entryText: row.EntryText.value,
+                dateTime: row.DateTime.value
+            };
+            journal.entries.push(entry);
+        });
+
+        res.json(journal);
+    });
+
+    request.addParameter('JournalID', TYPES.Int, journalID);
+    connection.callProcedure(request);
+});
+
+// app.post('/journalEntry', (req, res) => {
+//     const { JournalID, EntryText } = req.body;
+//     console.log(JournalID);
+//     const request = new Request('CreateWrittenEntry', (err) => {
+//         if (err) {
+//             console.error('Error creating entry:', err);
+//             return res.status(500).send('Failed to create entry');
+//         }
+//         // Sending a response with newly added entry details
+//         res.json({ journalID: JournalID, entryText: EntryText, dateTime: new Date() });
+//     });
+
+//     request.addParameter('JournalID', TYPES.Int, 1);
+//     request.addParameter('EntryText', TYPES.Text, EntryText);
+
+//     connection.callProcedure(request);
+// });
+
+
 
 app.post('/create-travel-plans', (req, res) => {
     const { destinationID, itinerary, localEmergencyContacts } = req.body;

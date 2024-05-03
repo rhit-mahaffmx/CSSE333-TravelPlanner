@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Journal Details</title>
+</head>
+<body>
+    <h1 id="journal-title">Journal</h1>
+    <ul id="journal-entries"></ul>
+    
+    <form id="new-entry-form">
+        <h2>Add New Entry</h2>
+        <label for="entry-text">Entry Text:</label>
+        <textarea id="entry-text" name="entry-text" required></textarea><br><br>
+        <button type="submit">Add Entry</button>
+    </form>
+
+    <button id="goBack">Go Back</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const journalID = urlParams.get('JournalID');
+
+            if (journalID) {
+                fetch(`/journal/${journalID}`)
+                    .then(response => response.json())
+                    .then(journal => {
+                        document.getElementById('journal-title').innerText = `Journal ${journal.JournalID}`;
+                        const entriesList = document.getElementById('journal-entries');
+                        journal.entries.forEach(entry => {
+                            const listItem = document.createElement('li');
+                            listItem.innerText = `${entry.dateTime}: ${entry.entryText}`;
+                            entriesList.appendChild(listItem);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching journal:', error));
+            }
+
+            document.getElementById('new-entry-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const entryText = document.getElementById('entry-text').value;
+                fetch('/journalEntry', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ JournalID: parseInt(journalID), EntryText: entryText })
+                })
+                .then(response => response.json())
+                .then(data => {
+                   
+                    const listItem = document.createElement('li');
+                    listItem.innerText = `${data.dateTime}: ${data.entryText}`;
+                    const entriesList = document.getElementById('journal-entries');
+                    entriesList.appendChild(listItem);
+                    // Clear the input field
+                    document.getElementById('entry-text').value = '';
+                })
+                .catch(error => console.error('Error adding entry:', error));
+            });
+
+            document.getElementById('goBack').addEventListener('click', function() {
+                window.location.href = 'landingPage.html';
+            });
+        });
+    </script>
+</body>
+</html>

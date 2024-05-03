@@ -25,12 +25,35 @@
      
             <button id="goBack">Go Back</button>
         </form>
-        <ul id="limitList"></ul>
+        <h2>All Budgets</h2>
+        <ul id="budgetList"></ul>
+       
     </div>
     <script>
-    document.getElementById('viewBudgets').addEventListener('click', function() {
-        window.location.href = 'BudgetManagement.html';
-    }); 
+    document.addEventListener('DOMContentLoaded', function() {
+            fetchBudgets();
+
+            function fetchBudgets() {
+                fetch('/budgets', {
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' },
+                })
+                .then(response => response.json())
+                .then(budgets => {
+                    const budgetList = document.getElementById('budgetList');
+                    budgetList.innerHTML = ''; 
+                    budgets.forEach(budget => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = `${budget.Name} - $${budget.SpendingLimit}`;
+                        listItem.onclick = () => {
+                            window.location.href = `/budgetDetails.html?budgetID=${budget.BudgetID}`;
+                        };
+                        budgetList.appendChild(listItem);
+                    });
+                })
+                .catch(error => console.error('Error fetching budgets:', error));
+            }
+        });
     document.getElementById('limitForm').addEventListener('submit', function(event) {
         event.preventDefault();
     
