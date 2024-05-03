@@ -21,8 +21,7 @@
             </div>
            
             <button type="submit">Create Budget</button>
-            <button type="button" id="viewBudgets">View Budgets</button>
-     
+           
             <button id="goBack">Go Back</button>
         </form>
         <h2>All Budgets</h2>
@@ -40,20 +39,25 @@
                 })
                 .then(response => response.json())
                 .then(budgets => {
+                    console.log('Budgets fetched:', budgets);
                     const budgetList = document.getElementById('budgetList');
                     budgetList.innerHTML = ''; 
+                    console.log(budgets);
                     budgets.forEach(budget => {
                         const listItem = document.createElement('li');
-                        listItem.textContent = `${budget.Name} - $${budget.SpendingLimit}`;
+                        listItem.textContent = budget.budgetName ;
                         listItem.onclick = () => {
-                            window.location.href = `/budgetDetails.html?budgetID=${budget.BudgetID}`;
+                            window.location.href = `/budgetManagement.html?budgetID=${budget.BudgetID}`;
                         };
                         budgetList.appendChild(listItem);
                     });
                 })
                 .catch(error => console.error('Error fetching budgets:', error));
             }
+            
+            fetchBudgets();
         });
+
     document.getElementById('limitForm').addEventListener('submit', function(event) {
         event.preventDefault();
     

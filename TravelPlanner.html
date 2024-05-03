@@ -6,9 +6,12 @@
 <body>
     <h1>Create Travel Plans</h1>
     <form id="itinerary-form">
+        <label for="travelPlanName">Travel Plan Name:</label>
+        <input type="text" id="travelPlanName" name="travelPlanName" required><br><br>
+
         <label for="destinationID">Destination ID:</label>
         <input type="text" id="destinationID" name="destinationID" required><br><br>
-        
+
         <label for="itinerary">Itinerary:</label>
         <textarea id="itinerary" name="itinerary" required></textarea><br><br>
 
@@ -18,13 +21,17 @@
         <input type="submit" value="Create Itinerary">
     </form>
     <p id="message"></p>
+    <h2>Your Plans</h2>
+    <ul id="plansList"></ul>
 
     <button id="goBack">Go Back</button>
-    <script src="app.js"></script>
-    <script src="connectConcept.js"></script>   
-    <script>    
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Handle the form submission
             document.getElementById('itinerary-form').addEventListener('submit', function(event) {
                 event.preventDefault();
+                const travelPlanName = document.getElementById('travelPlanName').value;
                 const destinationID = document.getElementById('destinationID').value;
                 const itinerary = document.getElementById('itinerary').value;
                 const localEmergencyContacts = document.getElementById('localEmergencyContacts').value;
@@ -35,12 +42,14 @@
                     body: JSON.stringify({
                         destinationID: destinationID,
                         itinerary: itinerary,
-                        localEmergencyContacts: localEmergencyContacts
+                        localEmergencyContacts: localEmergencyContacts,
+                        travelPlanName: travelPlanName
                     })
                 })
                 .then(response => response.json())
                 .then(data => {
-                    document.getElementById('message').innerText = data.message || 'travel plans created successfully!';
+                    document.getElementById('message').innerText = data.message || 'Travel plans created successfully!';
+                    fetchPlans(); // Fetch updated plans
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -48,11 +57,33 @@
                 });
             });
 
-      
+            // Fetch and display existing plans
+            function fetchPlans() {
+                fetch('/plans')
+                .then(response => response.json())
+                .then(plans => {
+                    const plansList = document.getElementById('plansList');
+                    plansList.innerHTML = '';
+                    console.log(plans);
+                    plans.forEach(plan => {
+                        const item = document.createElement('li');
+                        item.textContent = plan.TravelPlanName;
+                        item.onclick = function() {
+                            window.location.href = `/PlansPage.html?planID=${plan.PlanID}`;
+                        };
+                        plansList.appendChild(item);
+                    });
+                })
+                .catch(error => console.error('Error fetching plans:', error));
+            }
+
+            fetchPlans(); // Initial fetch of plans
+
+            // Go back to the landing page
             document.getElementById('goBack').addEventListener('click', function() {
-                window.location.href = 'landingPage.html'; 
+                window.location.href = 'landingPage.html';
             });
-    
+        });
     </script>
 </body>
 </html>

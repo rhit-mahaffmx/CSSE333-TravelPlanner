@@ -351,7 +351,7 @@ app.post('/journals', (req, res) => {
     
 });
 app.get('/budgets', (req, res) => {
-    const userID = req.session.userID; // Assuming userID is stored in session
+    const userID = req.session.userID; 
 
     if (!userID) {
         return res.status(401).send('User not authenticated');
@@ -362,17 +362,16 @@ app.get('/budgets', (req, res) => {
             console.error('Error fetching budgets:', err);
             return res.status(500).send('Failed to retrieve budgets');
         }
-
-        const budgets = rows.map(row => ({
-            BudgetID: row.BudgetID.value,
-            Name: row.Name.value,
-            SpendingLimit: row.SpendingLimit.value
-        }));
-
-        res.json(budgets);
+        console.log('defined rows:', rows);
+       return rows;
     });
 
     request.addParameter('UserID', TYPES.Int, userID);
+    request.addOutputParameter('BudgetName', TYPES.VarChar);
+    request.on('returnValue', (parameterName, value, metadata) => {
+
+        res.json(JSON.parse(value));
+    });
     connection.callProcedure(request);
 });
 
@@ -456,7 +455,7 @@ app.post('/journalEntry', (req, res) => {
 });
 
 app.post('/create-travel-plans', (req, res) => {
-    const { destinationID, itinerary, localEmergencyContacts } = req.body;
+    const { destinationID, itinerary, localEmergencyContacts, travelPlanName } = req.body;
     const userID = req.session.userID; 
     if (!userID || !destinationID) {
         return res.status(400).json({ message: 'UserID and DestinationID are required.' });
@@ -474,9 +473,73 @@ app.post('/create-travel-plans', (req, res) => {
     request.addParameter('DestinationID', TYPES.VarChar, destinationID);
     request.addParameter('Itinerary', TYPES.VarChar, itinerary);
     request.addParameter('LocalEmergencyContacts', TYPES.VarChar, localEmergencyContacts);
+    request.addParameter('travelPlanName', TYPES.VarChar, travelPlanName);
 
     connection.callProcedure(request);
 });
+
+app.get('/plan/:planID', (req, res) => {
+    const planID = parseInt(req.params.planID, 10);
+
+    const request = new Request('GetTravelPlan', (err) => {
+        if (err) {
+            console.error('Error fetching plan:', err);
+            return res.status(500).json({ message: 'Failed to retrieve plan' });
+        }
+       if (request.parameters && request.parameters.Plan) {
+            const planJson = request.parameters.Plan.value;
+            try {
+                const plan = JSON.parse(planJson);
+                res.json(plan);
+            } catch (parseErr) {
+                console.error('Error parsing plan JSON:', parseErr);
+                res.status(500).json({ message: 'Failed to parse plan' });
+            }
+        } else {
+            console.error('Plan parameter is undefined:', request.parameters);
+            res.status(500).json({ message: 'Failed to retrieve plan' });
+        }
+    });
+    console.log('planID:', planID);
+    request.addParameter('PlanID', TYPES.Int, planID);
+    request.addOutputParameter('Plan', TYPES.VarChar, 100000);
+    request.on('returnValue', (parameterName, value, metadata) => {
+        console.log('Value:', value);
+        console.log(parameterName + ' = ' + value); 
+        try {
+            const parsedValue = JSON.parse(value);
+            res.json(parsedValue);
+        } catch (error) {
+            console.error('Failed to parse value:', error);
+            res.status(500).json({ message: 'Failed to parse value' });
+        }
+    });
+    connection.callProcedure(request);
+});
+
+
+
+
+app.get('/plans', (req, res) => {
+    const userID = req.session.userID; 
+
+    if (!userID) {
+        return res.status(401).send('User not authenticated');
+    }
+
+    const request = new Request('GetTravelPlans', (err, rowCount, rows) => {
+        if (err) {
+            console.error('Error fetching Travel Plans:', err);
+            return res.status(500).send('Failed to retrieve Plans');
+        }
+
+       return rows;
+    });
+
+    request.addParameter('UserID', TYPES.Int, userID);
+    request.addOutputParameter('TravelPlanName', TYPES.VarChar);
+    request.on('returnValue', (parameterName, value, metadata) => {
+
 
 app.post('/destinations', (req, res) => {
     const destinationID = parseInt(req.body.DestinationID, 10);
@@ -501,4 +564,4 @@ app.post('/destinations', (req, res) => {
 
 app.listen(3001, ()=>{
     console.log("Port Open")
-})
+});
