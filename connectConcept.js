@@ -188,6 +188,46 @@ app.post("/Journal", (req, res) => {
         connection.callProcedure(request);
     ;
 });
+app.post("/Review", (req, res) => {
+    const  Text  = req.body.Text;
+    const  Rating  = req.body.Rating;
+    const  Destination  = req.body.Destination;
+    if (!Rating) {
+      
+        return res.status(400).send({ message: "Invalid input: Rating is required." });
+    }
+    if (!Destination) {
+      
+        return res.status(400).send({ message: "Invalid input: Destination is required." });
+    }
+    if (!Text) {
+      
+        return res.status(400).send({ message: "Invalid input: Review cannot be empty." });
+    }
+      
+  const userID = req.session.userID;
+  console.log("userID:", userID);
+      const request = new Request("CreateReview", (err) => {
+          if (err) {
+              console.error("Failed to execute procedure: ", err);
+              res.status(500).send({ message: "Failed to create review" });
+              return;
+          }
+      });
+      request.addParameter('UserID', TYPES.Int, userID);
+      request.addParameter('DestinationID', TYPES.VarChar, Destination);
+      request.addParameter('StarRating', TYPES.VarChar, Rating);
+      request.addParameter('ReviewText', TYPES.VarChar, Text);
+
+      request.on("requestCompleted", () => {
+          console.log("Review created successfully");
+          console.log("userID:", userID);
+          res.send({ message: "Review created successfully" });
+      });
+
+      connection.callProcedure(request);
+  ;
+});
 app.post("/CreateBudget", (req, res) => {
     const  Name  = req.body.Name;
     const spendingLimit = req.body.spendingLimit;
