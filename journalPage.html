@@ -1,49 +1,83 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Journal Details</title>
-</head>
-<body>
-    <h1 id="journal-title">Journal</h1>
-    <ul id="journal-entries"></ul>
-    
-    <form id="new-entry-form">
-        <h2>Add New Entry</h2>
-        <label for="entry-text">Entry Text:</label>
-        <textarea id="entry-text" name="entry-text" required></textarea><br><br>
-        <button type="submit">Add Entry</button>
-    </form>
+    <html>
+        <head>
+            <title>Journal Details</title>
+            <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+            <style>
+                .truncated {
+                    max-width: 100%;
+                    overflow: hidden; 
+                    text-overflow: ellipsis; 
+                    white-space: nowrap; 
+                    cursor: pointer; 
+                }
+                .expanded {
+                    white-space: normal;
+                    cursor: pointer; 
+                }
+            </style>
+        </head>
+        <body class="bg-gray-100">
+            <div class="container mx-auto p-4">
+                <h1 id="journal-title" class="text-2xl font-bold text-center text-gray-700">Journal</h1>
+                <button id="deleteJournalBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-2">Delete Journal</button>
+                <button id="deleteSelectedEntriesBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-2">Delete Selected Entries</button>
+                <ul id="journal-entries" class="divide-y divide-gray-300 mt-4">
+                </ul>
+                <form id="new-entry-form" class="flex flex-col space-y-2 mt-4">
+                    <h3 class="text-lg font-bold text-gray-700">Add New Entry</h3>
+                    <label for="entry-text" class="font-bold">Entry Text:</label>
+                    <textarea id="entry-text" name="entry-text" required class="p-2 border rounded"></textarea><br>
+                    <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add Entry</button>
+                </form>
+                <button id="goBack" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
+            </div>
 
-    <button id="goBack">Go Back</button>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const urlParams = new URLSearchParams(window.location.search);
+                const journalID = urlParams.get('journalID');
+                console.log(journalID);
+                if (journalID) {
+                    fetchEntries(journalID);
+                }
 
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const journalID = urlParams.get('journalID');
-            console.log(journalID);
-            if (journalID) {
-                fetch(`/getEntries`,{
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ JournalID: parseInt(journalID)})
-                })
+                function fetchEntries(journalID) {
+                    fetch(`/getEntries`,{
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ JournalID: parseInt(journalID)})
+                    })
                     .then(response => response.json())
                     .then(data => {
-                        document.getElementById('journal-title').innerText = 'Journal ' + journalID;
                         const entriesList = document.getElementById('journal-entries');
                         data.forEach(entry => {
-                            console.log(entry.value);
                             const listItem = document.createElement('li');
-                            listItem.innerText = entry.EntryText;
+                            listItem.classList.add("flex", "justify-between", "items-center", "p-2", "hover:bg-gray-200");
+                            listItem.innerHTML = `<input type="checkbox" class="form-checkbox" data-entry-id="${entry.EntryID}"><span>${entry.EntryText}</span>`;
                             entriesList.appendChild(listItem);
                         });
                     })
                     .catch(error => console.error('Error fetching journal:', error));
-            }
+                }
 
-            document.getElementById('new-entry-form').addEventListener('submit', function(event) {
-                event.preventDefault();
-                const entryText = document.getElementById('entry-text').value;
+                document.getElementById('new-entry-form').addEventListener('submit', function(event) {
+                    event.preventDefault();
+                    const entryText = document.getElementById('entry-text').value;
+                    addEntry(journalID, entryText);
+                });
+
+                document.getElementById('deleteJournalBtn').addEventListener('click', function() {
+                    deleteEntries();
+                });
+
+                document.getElementById('goBack').addEventListener('click', function() {
+                    window.location.href = 'landingPage.html';
+                });
+            });
+
+            function addEntry(journalID, entryText) {
                 fetch('/journalEntry', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -51,24 +85,70 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                   
-                    const listItem = document.createElement('li');
-                    listItem.innerText = `${data.entryText}`;
                     const entriesList = document.getElementById('journal-entries');
+                    const listItem = document.createElement('li');
+                    listItem.classList.add("flex", "justify-between", "items-center", "p-2", "hover:bg-gray-200");
+                    listItem.innerHTML = `<input type="checkbox" class="form-checkbox" data-entry-id="${data.EntryID}"><span>${entryText}</span>`;
                     entriesList.appendChild(listItem);
-                    // Clear the input field
                     document.getElementById('entry-text').value = '';
                 })
                 .catch(error => console.error('Error adding entry:', error));
-            });
+            }
+            document.getElementById('journal-entries').addEventListener('click', function(event) {
+                    if (event.target.tagName === 'SPAN') {
+                        toggleText(event.target);
+                    }
+                });
+            function toggleText(element) {
+               
+                if (element.classList.contains('truncated')) {
+                    element.classList.remove('truncated');
+                    element.classList.add('expanded');
+                } else {
+                    element.classList.add('truncated');
+                    element.classList.remove('expanded');
+                }
+            }
 
-            
-            document.getElementById('goBack').addEventListener('click', function() {
-                window.location.href = 'landingPage.html';
-            });
-        });
-    </script>
-</body>
+            document.getElementById('deleteJournalBtn').addEventListener('click', function() {
+    const journalID = urlParams.get('journalID');  // Make sure this is defined in your script
+    fetch('/deleteJournal', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ journalID: parseInt(journalID) })
+    })
+    .then(response => response.json())
+    .then(data => {
+        alert('Journal deleted successfully!');
+        window.location.href = 'landingPage.html'; // Redirect after deletion
+    })
+    .catch(error => console.error('Error:', error));
+});
 
-<scrip src="connectConcept.js"></script>
+document.getElementById('deleteSelectedEntriesBtn').addEventListener('click', function() {
+    deleteEntries();  
+});
+
+function deleteEntries() {
+    const selectedEntries = document.querySelectorAll('input[type="checkbox"]:checked');
+    selectedEntries.forEach(entry => {
+        const entryID = entry.getAttribute('data-entry-id');
+        fetch(`/deleteEntry`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ EntryID: parseInt(entryID) })
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert('Entry deleted successfully!');
+            entry.parentElement.remove();  // Remove the entry from the list
+        })
+        .catch(error => console.error('Error deleting entry:', error));
+    });
+}
+
+        </script>
+        
+        
+    </body>
 </html>
