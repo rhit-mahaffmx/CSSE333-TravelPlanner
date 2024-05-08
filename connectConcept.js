@@ -304,8 +304,7 @@ app.post("/CreateExpense", (req, res) => {
       if (!foundBudgetID) {
         return res.status(404).send({ message: "Budget not found." });pp
       }
-  
-uhoiwhwjfshfoa;jsfnsjhd;oiQH
+
       const request = new Request("CreateExpense", (err) => {
         if (err) {
           console.error("Failed to create expense: ", err);
@@ -574,7 +573,7 @@ app.post('/deleteBudget', (req, res) => {
             console.error('Error deleting budget:', err);
             return res.status(500).send('Failed to delete budget');
         }
-        res.send('Budget deleted successfully');
+        res.json('Budget deleted successfully');
     });
     request.addParameter('BudgetID', TYPES.Int, budgetID);
     connection.callProcedure(request);

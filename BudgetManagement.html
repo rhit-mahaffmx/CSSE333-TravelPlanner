@@ -29,48 +29,56 @@
         </div>
    
     <script src="connectConcept.js"></script>   
-    <script>document.getElementById('expenseForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-        const budgetID = urlParams.get('budgetID');
-        const currency = document.getElementById('currency').value;
-        const category = document.getElementById('category').value;
-        const cost = document.getElementById('cost').value;
-    document.getElementById('deleteBudgetBtn').addEventListener('click', function() {
-        console.log('Deleting budget...');
-    fetch('/deleteBudget', {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ budgetID })
-    })
-    .then(response => response.json())
-    .then(data => {
-        alert('Budget deleted successfully!');
-    location.reload();
-    })
-    .catch(error => console.error('Error:', error));
-});
 
-        fetch('/CreateExpense', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                currency: currency,
-                category: category,
-                cost: cost,
-                budgetName: document.getElementById('budgetName').textContent 
-            })
-        }).then(response => response.json())
-          .then(data => {
-              alert(data.message);
-              if (data.message === "Expense created successfully.") {
-                 
-                  loadExpenses(); // You need to define this function to refresh or append to the expense list
+    <script>
+        
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const budgetID = urlParams.get('budgetID');
+
+            document.getElementById('deleteBudgetBtn').addEventListener('click', function() {
+                console.log('Deleting budget...');
+                fetch('/deleteBudget', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ budgetID })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert("Budget deleted successfully.");
+                    window.location.href = 'Budget.html'; 
+                })
+                .catch(error => console.error('Error:', error));
+            });
+
+            document.getElementById('expenseForm').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const currency = document.getElementById('currency').value;
+                const category = document.getElementById('category').value;
+                const cost = document.getElementById('cost').value;
+
+                fetch('/CreateExpense', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        currency: currency,
+                        category: category,
+                        cost: cost,
+                        budgetName: document.getElementById('budgetName').textContent 
+                    })
+                }).then(response => response.json())
+                .then(data => {
+                    alert(data.message);
+                    if (data.message === "Expense created successfully.") {
+                  loadExpenses(); 
               }
           })
           .catch(error => console.error('Error:', error));
     });
+});
     </script>
 </body>
 </html>
