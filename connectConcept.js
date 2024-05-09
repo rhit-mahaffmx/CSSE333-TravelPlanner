@@ -433,22 +433,48 @@ app.post('/getBudgetInfo', (req, res) => {
 
 app.post('/getExpenses', (req, res) => {
     const budgetID = parseInt(req.body.BudgetID, 10);
-    const request = new Request('GetBudgetWithExpenses', (err, rowCount, rows) => {
+    const request = new Request('GetBudgetWithExpenses', (err) => {
         if (err) {
-            console.error('Error fetching name:', err);
-            return res.status(500).send('Failed to retrieve name');
+            console.error('SQL error:', err);
+            return res.status(500).send('Failed to execute procedure');
         }
-        return rows;
     });
 
-   
     request.addParameter('BudgetID', TYPES.Int, budgetID);
+    request.addOutputParameter('ResultJSON', TYPES.NVarChar, {length: 'MAX'}, '');
 
-    request.on('row', function(columns) {
-        res.send({Data: columns});
+    connection.callProcedure(request, (err) => {
+        if (err) {
+            console.error('Error calling procedure:', err);
+            return res.status(500).send('Error processing request');
+        }
+        const resultJson = request.parameters.ResultJSON.value;
+        try {
+            const resultData = JSON.parse(resultJson);
+            res.send({ Data: resultData });
+        } catch (jsonErr) {
+            console.error('Error parsing JSON:', jsonErr);
+            res.status(500).send('Error parsing JSON data');
+        }
     });
+});
+
+app.post('/updateBudgetName', (req, res) => {
+    const { budgetID, budgetName } = req.body;
+    const request = new Request('UpdateBudgetName', (err) => {
+        if (err) {
+            console.error('Error updating budget name:', err);
+            return res.status(500).json({ message: 'Failed to update budget name' });
+        }
+        res.json({ message: 'Budget name updated successfully' });
+    });
+
+    request.addParameter('BudgetID', TYPES.Int, budgetID);
+    request.addParameter('BudgetName', TYPES.NVarChar, budgetName);
+
     connection.callProcedure(request);
 });
+
 
 app.post('/getEntries', (req, res) => {
     const journalID = parseInt(req.body.JournalID, 10);
