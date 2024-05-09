@@ -302,9 +302,8 @@ app.post("/CreateExpense", (req, res) => {
         return res.status(500).send({ message: "Error searching for budget." });
       }
       if (!foundBudgetID) {
-        return res.status(404).send({ message: "Budget not found." });
+        return res.status(404).send({ message: "Budget not found." });pp
       }
-  
 
       const request = new Request("CreateExpense", (err) => {
         if (err) {
@@ -587,6 +586,77 @@ app.post('/destinations', (req, res) => {
         res.json(JSON.parse(value));
     });
     request.addOutputParameter('DestinationName', TYPES.VarChar);
+    connection.callProcedure(request);
+});
+
+app.post('/deleteBudget', (req, res) => {
+    const { budgetID } = req.body;
+    const request = new Request('DeleteBudget', (err) => {
+        if (err) {
+            console.error('Error deleting budget:', err);
+            return res.status(500).send('Failed to delete budget');
+        }
+        res.json('Budget deleted successfully');
+    });
+    request.addParameter('BudgetID', TYPES.Int, budgetID);
+    connection.callProcedure(request);
+});
+
+app.post('/deleteJournal', (req, res) => {
+    console.log('delete journal');
+    console.log(req.body);  
+    const { journalID } = req.body;
+    console.log('Received journalId for deletion:', journalID);
+    const request = new Request('DeleteJournal', (err) => {
+        if (err) {
+            console.error('Error deleting journal:', err);
+            return res.status(500).send('Failed to delete journal');
+        }
+        console.log('Journal deleted successfully');
+        const journalData = { journal: "Journal deleted successfully" };
+        res.json(journalData); 
+       
+        
+    });
+    request.addParameter('JournalID', TYPES.Int, journalID);
+    connection.callProcedure(request);
+});
+
+app.post('/deleteTravelPlan', (req, res) => {
+    console.log('Attempt to delete travel plan');
+    const { PlanID } = req.body;
+    console.log('Received travelPlanID for deletion:', PlanID);
+    const request = new Request('DeleteTravelPlan', (err) => {
+        if (err) {
+            console.error('Error deleting travel plan:', err);
+            return res.status(500).json({ message: 'Failed to delete travel plan' });
+        }
+        console.log('Travel plan deleted successfully');
+        res.json({ message: 'Travel plan deleted successfully' });
+    });
+
+    request.addParameter('TravelPlanID', TYPES.Int, PlanID);
+    connection.callProcedure(request);
+});
+
+app.post('/deleteEntry', (req, res) => {
+    const { EntryID } = req.body;
+    if (!EntryID) {
+        res.status(400).json({ message: 'Entry ID is required' });
+        return;
+    }
+
+    const request = new Request('DeleteWrittenEntry', (err) => {
+        if (err) {
+            console.error('Error when calling stored procedure:', err);
+            res.status(500).json({ message: 'Failed to delete entry' });
+            return;
+        }
+        res.json({ message: 'Entry deleted successfully!' });
+    });
+
+    request.addParameter('EntryID', TYPES.Int, EntryID);
+
     connection.callProcedure(request);
 });
 

@@ -1,21 +1,22 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title> \Journals</title>
-</head>
-<body>
-    <h1>Create Journal</h1>
-    <form id="journal-form">
-        <label for="journalName">Journal Name:</label>
-        <input type="text" id="journalName" name="journalName" required><br><br>
-        <input type="submit" value="Create Journal">
-    </form>
-
-    <h2>Your Journals</h2>
-    <ul id="journalsList"></ul>
-
-    <button id="goBack">Go Back</button>
-
+    <head>
+        <title>Journals</title>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-100">
+        <div class="container mx-auto p-4">
+            <h1 class="text-2xl font-bold text-center text-gray-700">Create Journal</h1>
+            <form id="journal-form" class="flex flex-col space-y-2 mt-4">
+                <label for="journalName" class="font-bold">Journal Name:</label>
+                <input type="text" id="journalName" name="journalName" required class="p-2 border rounded">
+                <input type="submit" value="Create Journal" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            </form>
+            <h2 class="text-xl font-bold text-gray-700 mt-6">Your Journals</h2>
+            <ul id="journalsList" class="list-disc mx-auto py-4 px-6"></ul>
+            <button id="goBack" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
+        </div>
+    
     <script type="text/javascript">
     
     

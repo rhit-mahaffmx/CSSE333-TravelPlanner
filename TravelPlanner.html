@@ -1,33 +1,31 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Create Travel Plans</title>
-</head>
-<body>
-    <h1>Create Travel Plans</h1>
-    <form id="itinerary-form">
-        <label for="travelPlanName">Travel Plan Name:</label>
-        <input type="text" id="travelPlanName" name="travelPlanName" required><br><br>
-
-        <label for="destinationID">Destination ID:</label>
-        <input type="text" id="destinationID" name="destinationID" required><br><br>
-
-        <label for="itinerary">Itinerary:</label>
-        <textarea id="itinerary" name="itinerary" required></textarea><br><br>
-
-        <label for="localEmergencyContacts">Local Emergency Contacts:</label>
-        <textarea id="localEmergencyContacts" name="localEmergencyContacts" required></textarea><br><br>
-
-        <input type="submit" value="Create Itinerary">
-    </form>
-    <p id="message"></p>
-    <h2>Your Plans</h2>
-    <ul id="plansList"></ul>
-
-    <button id="goBack">Go Back</button>
-
+    <head>
+        <title>Create Travel Plans</title>
+        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-gray-100">
+        <div class="container mx-auto p-4">
+            <h1 class="text-2xl font-bold text-center text-gray-700">Create Travel Plans</h1>
+            <form id="itinerary-form" class="flex flex-col space-y-2 mt-4">
+                <label for="travelPlanName" class="font-bold">Travel Plan Name:</label>
+                <input type="text" id="travelPlanName" name="travelPlanName" required class="p-2 border rounded"><br>
+                <label for="destinationID" class="font-bold">Destination ID:</label>
+                <input type="text" id="destinationID" name="destinationID" required class="p-2 border rounded"><br>
+                <label for="itinerary" class="font-bold">Itinerary:</label>
+                <textarea id="itinerary" name="itinerary" required class="p-2 border rounded"></textarea><br>
+                <label for="localEmergencyContacts" class="font-bold">Local Emergency Contacts:</label>
+                <textarea id="localEmergencyContacts" name="localEmergencyContacts" required class="p-2 border rounded"></textarea><br>
+                <input type="submit" value="Create Itinerary" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+            </form>
+            <p id="message" class="mt-4 text-gray-700"></p>
+            <h2 class="text-xl font-bold text-gray-700 mt-6">Your Plans</h2>
+            <ul id="plansList" class="list-disc mx-auto py-4 px-6"></ul>
+            <button id="goBack" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
+        </div>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            
             // Handle the form submission
             document.getElementById('itinerary-form').addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -77,7 +75,7 @@
                 .catch(error => console.error('Error fetching plans:', error));
             }
 
-            fetchPlans(); // Initial fetch of plans
+            fetchPlans();
 
             // Go back to the landing page
             document.getElementById('goBack').addEventListener('click', function() {
