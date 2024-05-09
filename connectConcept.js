@@ -216,13 +216,13 @@ app.post("/createReview", (req, res) => {
       });
       request.addParameter('UserID', TYPES.Int, userID);
       request.addParameter('DestinationID', TYPES.VarChar, Destination);
-      request.addParameter('StarRating', TYPES.VarChar, Rating);
+      request.addParameter('StarRating', TYPES.Int, Rating);
       request.addParameter('ReviewText', TYPES.VarChar, Text);
 
       request.on("requestCompleted", () => {
           console.log("Review created successfully");
           console.log("userID:", userID);
-          res.send({ message: "Review created successfully" });
+          //res.send({ message: "Review created successfully" });
       });
 
       connection.callProcedure(request);
@@ -302,7 +302,7 @@ app.post("/CreateExpense", (req, res) => {
         return res.status(500).send({ message: "Error searching for budget." });
       }
       if (!foundBudgetID) {
-        return res.status(404).send({ message: "Budget not found." });pp
+        return res.status(404).send({ message: "Budget not found." });
       }
 
       const request = new Request("CreateExpense", (err) => {
@@ -320,7 +320,8 @@ app.post("/CreateExpense", (req, res) => {
   
       request.on("requestCompleted", () => {
         console.log("Expense created successfully for Budget ID: ", foundBudgetID);
-        //res.send({ message: "Expense created successfully." });
+        //res.status(500).send({ message: "Expense Created" });
+        res.send({ message: "Expense created successfully." });
       });
   
       connection.callProcedure(request);
@@ -350,27 +351,26 @@ app.post('/journals', (req, res) => {
     
 });
 app.post('/getReviews', (req, res) => {
-    console.log("test");
     const userID  = req.session.userID;
     const request = new Request('GetReviews', (err, rowCount, rows) => {
         if (err) {
-            console.error('Error fetching reviews:', err);
-            return res.status(500).send('Failed to retrieve reviews');
+            console.error('Error fetching name:', err);
+            return res.status(500).send('Failed to retrieve name');
         }
-        console.log('journals api called');
-       return rows;
+        return rows;
     });
 
    
     request.addParameter('UserID', TYPES.Int, userID);
-    request.addOutputParameter('ReviewText', TYPES.VarChar);
 
-    request.on('returnValue', (parameterName, value, metadata) => {
-
-        res.json(JSON.parse(value));
+    request.on('row', function(columns) {
+        res.send({Data: columns});
     });
     connection.callProcedure(request);
-    
+});
+app.post('/getUserName', (req, res) => {
+    console.log(req.session.userName);
+    res.send({Username: req.session.userName});
 });
 app.get('/budgets', (req, res) => {
     const userID = req.session.userID; 
@@ -384,7 +384,7 @@ app.get('/budgets', (req, res) => {
             console.error('Error fetching budgets:', err);
             return res.status(500).send('Failed to retrieve budgets');
         }
-        console.log('defined rows:', rows);
+        //console.log('defined rows:', rows);
        return rows;
     });
 
@@ -397,6 +397,44 @@ app.get('/budgets', (req, res) => {
     connection.callProcedure(request);
 });
 
+app.post('/getBudgetInfo', (req, res) => {
+    const budgetID = parseInt(req.body.BudgetID, 10);
+    const request = new Request('GetBudgetInfo', (err, rowCount, rows) => {
+        if (err) {
+            console.error('Error fetching name:', err);
+            return res.status(500).send('Failed to retrieve name');
+        }
+        return rows;
+    });
+
+   
+    request.addParameter('BudgetID', TYPES.Int, budgetID);
+
+    request.on('row', function(data) {
+        //console.log(data[0].value)
+        res.send({Name: data[0].value, RemainingBudget: data[1].value});
+    });
+    connection.callProcedure(request);
+});
+
+app.post('/getExpenses', (req, res) => {
+    const budgetID = parseInt(req.body.BudgetID, 10);
+    const request = new Request('GetBudgetWithExpenses', (err, rowCount, rows) => {
+        if (err) {
+            console.error('Error fetching name:', err);
+            return res.status(500).send('Failed to retrieve name');
+        }
+        return rows;
+    });
+
+   
+    request.addParameter('BudgetID', TYPES.Int, budgetID);
+
+    request.on('row', function(columns) {
+        res.send({Data: columns});
+    });
+    connection.callProcedure(request);
+});
 
 app.post('/getEntries', (req, res) => {
     const journalID = parseInt(req.body.JournalID, 10);
@@ -414,7 +452,6 @@ app.post('/getEntries', (req, res) => {
     request.addOutputParameter('EntryText', TYPES.VarChar);
 
     request.on('returnValue', (parameterName, value, metadata) => {
-        console.log(value);
         res.json(JSON.parse(value));
     });
     connection.callProcedure(request);

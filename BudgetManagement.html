@@ -31,7 +31,26 @@
     <script src="connectConcept.js"></script>   
 
     <script>
-        
+        let Balance1 = 0;
+        function loadExpenses(budgetID) {
+                    fetch(`/getExpenses`,{
+                        method: 'Post',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ BudgetID: parseInt(budgetID)})
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        const entriesList = document.getElementById('expenseList');
+                        data.forEach(entry => {
+                            const listItem = document.createElement('li');
+                            listItem.classList.add("flex", "justify-between", "items-center", "p-2", "hover:bg-gray-200");
+                            //STRING GOES HERE
+                            listItem.innerHTML = `<input type="radio" name="entryRadio" class="form-radio" data-entry-id="${entry.EntryID}"><span class="truncated" onclick="toggleText(this)">${entry.EntryText}</span>`;
+                            entriesList.appendChild(listItem);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching expenses:', error));
+                }
         
         document.addEventListener('DOMContentLoaded', function() {
             const urlParams = new URLSearchParams(window.location.search);
@@ -51,13 +70,27 @@
                 })
                 .catch(error => console.error('Error:', error));
             });
+            fetch('/getBudgetInfo', {
+                method: 'Post',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ BudgetID: parseInt(budgetID)})
+            })
+            .then(response => response.json())
+                .then(budget => {
+                    document.getElementById('budgetName').innerHTML = budget.Name; 
+                    balance1 = budget.RemainingBudget;
+                    document.getElementById('spendingLimit').innerHTML = budget.RemainingBudget; 
+                    loadExpenses(budgetID);
+                })
+                .catch(error => console.error('Error fetching budgets:', error));
 
+                
             document.getElementById('expenseForm').addEventListener('submit', function(event) {
                 event.preventDefault();
                 const currency = document.getElementById('currency').value;
                 const category = document.getElementById('category').value;
                 const cost = document.getElementById('cost').value;
-
+                
                 fetch('/CreateExpense', {
                     method: 'POST',
                     headers: {
@@ -71,12 +104,18 @@
                     })
                 }).then(response => response.json())
                 .then(data => {
+                    balance = balance - cost;
+                    //document.getElementById('spendingLimit').innerHTML = balance; 
                     alert(data.message);
                     if (data.message === "Expense created successfully.") {
-                  loadExpenses(); 
+                  loadExpenses(budgetID); 
               }
           })
           .catch(error => console.error('Error:', error));
+          
+
+
+
     });
 });
     </script>
