@@ -374,6 +374,20 @@ app.get('/budgets', (req, res) => {
     connection.callProcedure(request);
 });
 
+app.post('/updateEntryText', (req, res) => {
+    const { EntryID, NewText } = req.body;
+    const request = new Request('UpdateEntryText', (err) => {
+        if (err) {
+            console.error('Error updating entry text:', err);
+            return res.status(500).json({ message: 'Failed to update entry text' });
+        }
+        res.json({ message: 'Entry text updated successfully' });
+    });
+    request.addParameter('EntryID', TYPES.Int, EntryID);
+    request.addParameter('NewText', TYPES.NVarChar, NewText);
+    connection.callProcedure(request);
+});
+
 
 app.post('/getEntries', (req, res) => {
     const journalID = parseInt(req.body.JournalID, 10);
