@@ -15,7 +15,7 @@
                     <input type="text" id="budgetName" placeholder="Enter budget name" required class="p-2 border rounded">
                 </div>
                 <div>
-                    <label for="limit" class="font-bold">Spending Limit:</label>
+                    <label for="limit" class="font-bold">Remainging Budget:</label>
                     <input type="number" id="limit" placeholder="Enter limit" required class="p-2 border rounded">
                 </div>
                 <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Create Budget</button>
@@ -56,7 +56,8 @@
 
         
     });
-      
+    
+
 
             function fetchBudgets() {
                 fetch('/budgets', {
