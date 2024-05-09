@@ -350,24 +350,7 @@ app.post('/journals', (req, res) => {
     connection.callProcedure(request);
     
 });
-app.post('/getReviews', (req, res) => {
-    const userID  = req.session.userID;
-    const request = new Request('GetReviews', (err, rowCount, rows) => {
-        if (err) {
-            console.error('Error fetching name:', err);
-            return res.status(500).send('Failed to retrieve name');
-        }
-        return rows;
-    });
 
-   
-    request.addParameter('UserID', TYPES.Int, userID);
-
-    request.on('row', function(columns) {
-        res.send({Data: columns});
-    });
-    connection.callProcedure(request);
-});
 app.post('/getUserName', (req, res) => {
     console.log(req.session.userName);
     res.send({Username: req.session.userName});
@@ -475,6 +458,39 @@ app.post('/updateBudgetName', (req, res) => {
     connection.callProcedure(request);
 });
 
+app.get('/getUsername', (req, res) => {
+    const username = req.session.username;
+    if (username) {
+        res.json({ username });
+    } else {
+        res.status(404).json({ message: 'Username not found in session' });
+    }
+});
+
+app.post('/getReviews', (req, res) => {
+    const UserID  = req.session.userID;
+    const request = new Request('GetReviews', (err) => {
+        if (err) {
+            console.error('Error fetching reviews:', err);
+            return res.status(500).json({ message: 'Failed to retrieve reviews' });
+        }
+    });
+
+    request.addParameter('UserID', TYPES.Int, UserID);
+    request.addOutputParameter('ReviewText', TYPES.NVarChar, );
+
+    request.on('returnValue', (parameterName, value, metadata) => {
+        if (parameterName === 'ReviewText') {
+           
+            const reviews = JSON.parse(value);
+            res.json(reviews);
+         
+            
+        }
+    });
+
+    connection.callProcedure(request);
+});
 
 app.post('/getEntries', (req, res) => {
     const journalID = parseInt(req.body.JournalID, 10);
