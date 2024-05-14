@@ -254,79 +254,7 @@ app.post("/CreateBudget", (req, res) => {
 
     connection.callProcedure(request);
 });
-app.post("/CreateExpense", (req, res) => {
-    const { currency, category, cost, budgetName } = req.body;
-    const userID = req.session.userID;
-  
 
-    if (!userID) {
-      return res.status(401).send({ message: "User is not logged in." });
-    }
-  
-    if (!currency || !category || !cost || !budgetName) {
-      return res.status(400).send({ message: "Missing required input." });
-    }
-   const searchBudgetID = (budgetName, callback) => {
-      let budgetID = null;
-  
-      const request = new Request("Search_Budget", (err) => {
-        if (err) {
-          console.error("Failed to search for budget: ", err);
-          return callback(err, null);
-        }
-      });
-  
-      request.addParameter('BudgetID', TYPES.Int, null);
-      request.addParameter('SpendingLimit', TYPES.Decimal, null);
-      request.addParameter('UserID', TYPES.Int, userID);
-      request.addParameter('Above_Below', TYPES.Binary, null); 
-      
-      request.on('row', (columns) => {
-        columns.forEach((column) => {
-          if (column.metadata.colName === 'BudgetID') {
-            budgetID = column.value;
-          }
-        });
-      });
-  
-      request.on("requestCompleted", () => {
-        return callback(null, budgetID);
-      });
-  
-      connection.callProcedure(request);
-    };
-  
-
-    searchBudgetID(budgetName, (err, foundBudgetID) => {
-      if (err) {
-        return res.status(500).send({ message: "Error searching for budget." });
-      }
-      if (!foundBudgetID) {
-        return res.status(404).send({ message: "Budget not found." });
-      }
-
-      const request = new Request("CreateExpense", (err) => {
-        if (err) {
-          console.error("Failed to create expense: ", err);
-          return res.status(500).send({ message: "Failed to create expense." });
-        }
-      });
-  
-      request.addParameter('currency', TYPES.VarChar, currency);
-      request.addParameter('category', TYPES.VarChar, category);
-      request.addParameter('cost', TYPES.Decimal, cost);
-      request.addParameter('userID', TYPES.Int, userID);
-      request.addParameter('budgetID', TYPES.Int, foundBudgetID);
-  
-      request.on("requestCompleted", () => {
-        console.log("Expense created successfully for Budget ID: ", foundBudgetID);
-        //res.status(500).send({ message: "Expense Created" });
-        res.send({ message: "Expense created successfully." });
-      });
-  
-      connection.callProcedure(request);
-    });
-  });
 app.post('/journals', (req, res) => {
     
     const userID  = req.session.userID;
@@ -414,32 +342,53 @@ app.post('/getBudgetInfo', (req, res) => {
     connection.callProcedure(request);
 });
 
-app.post('/getExpenses', (req, res) => {
-    const budgetID = parseInt(req.body.BudgetID, 10);
-    const request = new Request('GetBudgetWithExpenses', (err) => {
+app.post('/createExpense', (req, res) => {
+    const UserID = req.session.userID;
+    const { budgetID, category, cost, currency } = req.body;
+    const request = new Request('CreateExpense', (err) => {
         if (err) {
-            console.error('SQL error:', err);
-            return res.status(500).send('Failed to execute procedure');
+            console.error('Error creating expense:', err);
+            return res.status(500).send('Failed to create expense');
         }
+        res.json({ message: 'Expense created successfully' });
     });
 
     request.addParameter('BudgetID', TYPES.Int, budgetID);
-    request.addOutputParameter('ResultJSON', TYPES.NVarChar, {length: 'MAX'}, '');
+    request.addParameter('Category', TYPES.VarChar, category);
+    request.addParameter('Currency', TYPES.VarChar, currency);   
+    request.addParameter('Cost', TYPES.Float, cost);
+    request.addParameter('UserID', TYPES.Int, UserID);
 
-    connection.callProcedure(request, (err) => {
-        if (err) {
-            console.error('Error calling procedure:', err);
-            return res.status(500).send('Error processing request');
-        }
-        const resultJson = request.parameters.ResultJSON.value;
-        try {
-            const resultData = JSON.parse(resultJson);
-            res.send({ Data: resultData });
-        } catch (jsonErr) {
-            console.error('Error parsing JSON:', jsonErr);
-            res.status(500).send('Error parsing JSON data');
-        }
-    });
+    connection.callProcedure(request);
+});
+
+app.post('/getExpenses', (req, res) => {
+    const budgetID = parseInt(req.body.BudgetID, 10);
+
+        const request = new Request('GetBudgetWithExpenses', (err) => {
+            if (err) {
+                console.error('Request error:', err);
+                return res.status(500).send('Failed to execute procedure');
+            }
+        });
+
+        request.addParameter('BudgetID', TYPES.Int, budgetID);
+        request.addOutputParameter('Expense', TYPES.NVarChar);
+
+        request.on('returnValue', (paramName, value) => {
+            if (paramName === 'Expense') {
+                try {
+                    const expenses = JSON.parse(value);
+                    res.json({ Expenses: expenses });
+                } catch (jsonErr) {
+                    console.error('Error parsing JSON:', jsonErr);
+                    res.status(500).send('Error parsing JSON data');
+                }
+            }
+        });
+
+        connection.callProcedure(request);
+   
 });
 
 app.post('/updateBudgetName', (req, res) => {
@@ -511,44 +460,7 @@ app.post('/getEntries', (req, res) => {
         res.json(JSON.parse(value));
     });
     connection.callProcedure(request);
-    // const journalID = parseInt(req.body.JournalID, 10);
-    // console.log(journalID);
-    // const request = new Request("SELECT EntryID, EntryText, [DateTime] FROM Written_Entries WHERE JournalID = " + journalID + ";", (err, rowCount, rows) => {
-    // //new Request('GetJournalWithEntries', (err, rowCount, rows) => {
-    //     if (err) {
-    //         console.error('Error fetching journals:', err);
-    //         return res.status(500).send('Failed to retrieve journals');
-    //     }
-    //     console.log('journals api called');       
-    // });
-    // request.addParameter('JournalID', TYPES.Int, journalID);
-    // let rows = [];
-    // request.on('row',function(columns){
-    //     rows.push({
-    //         "id":columns[1].value,
-    //         "text":columns[2].value,
-    //         "date":columns[3].value
-    //     });
-    //     console.log("test");
-    //     console.log(rows[1].id);
-    // });
-    // request.on('returnValue', (parameterName, value, metadata) => {
-        
-    // });
-    // const journal = [];
-    //     rows.forEach(row => {
-    //         const entry = {
-    //             entryID: row.EntryID.value,
-    //             entryText: row.EntryText.value,
-    //             dateTime: row.DateTime.value
-    //         };
-    //         journal.push(entry);
-    //     });
-    //     journal.forEach(entry => {
-    //         console.log(entry.entryID);
-    //     });
-    //     res.json(journal);
-    //connection.callProcedure(request);
+   
 });
 
 app.post('/journalEntry', (req, res) => {
@@ -601,23 +513,11 @@ app.get('/plan/:planID', (req, res) => {
             console.error('Error fetching plan:', err);
             return res.status(500).json({ message: 'Failed to retrieve plan' });
         }
-       if (request.parameters && request.parameters.Plan) {
-            const planJson = request.parameters.Plan.value;
-            try {
-                const plan = JSON.parse(planJson);
-                res.json(plan);
-            } catch (parseErr) {
-                console.error('Error parsing plan JSON:', parseErr);
-                res.status(500).json({ message: 'Failed to parse plan' });
-            }
-        } else {
-            console.error('Plan parameter is undefined:', request.parameters);
-            res.status(500).json({ message: 'Failed to retrieve plan' });
-        }
+       return 
     });
     console.log('planID:', planID);
     request.addParameter('PlanID', TYPES.Int, planID);
-    request.addOutputParameter('Plan', TYPES.VarChar, { length: 'MAX' }); 
+    request.addOutputParameter('Plan', TYPES.NVarChar); 
     request.on('returnValue', (parameterName, value) => {
         console.log(`Plan received from SQL: ${value}`); 
         try {
@@ -634,6 +534,28 @@ app.get('/plan/:planID', (req, res) => {
 });
 
 
+app.post('/editTravelPlan', (req, res) => {
+    const { PlanID, TravelPlanName, Itinerary } = req.body;
+    
+        
+            const request = new Request('EditTravelPlan', (err) => {
+                if (err) {
+                    console.error('Request error:', err);
+                    res.status(500).json('Error executing the request');
+                } else {
+                    res.status(200).json('Travel plan updated successfully');
+                }
+               
+            });
+
+            request.addParameter('PlanID', TYPES.Int, PlanID);
+            request.addParameter('TravelPlanName', TYPES.NVarChar, TravelPlanName);
+            request.addParameter('Itinerary', TYPES.NVarChar, Itinerary);
+
+            connection.callProcedure(request);
+        
+    });
+
 
 
 app.get('/plans', (req, res) => {
@@ -649,7 +571,7 @@ app.get('/plans', (req, res) => {
             return res.status(500).send('Failed to retrieve Plans');
         }
 
-       return rows;
+      
     });
 
     request.addParameter('UserID', TYPES.Int, userID);

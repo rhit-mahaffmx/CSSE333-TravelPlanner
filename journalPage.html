@@ -4,13 +4,25 @@
         <head>
             <title>Journal Details</title>
             <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-            
+            <style>
+                .truncated {
+                    max-width: 100%;
+                    overflow: hidden; 
+                    text-overflow: ellipsis; 
+                    white-space: nowrap; 
+                    cursor: pointer; 
+                }
+                .expanded {
+                    white-space: normal;
+                    cursor: pointer; 
+                }
+            </style>
         </head>
         <body class="bg-gray-100">
             <div class="container mx-auto p-4">
                 <h1 id="journal-title" class="text-2xl font-bold text-center text-gray-700">Journal</h1>
                 <button id="deleteJournalBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-2">Delete Journal</button>
-                <button id="deleteSelectedEntriesBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-2">Delete Selected Entry</button>
+                <button id="deleteSelectedEntriesBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mt-2">Delete Selected Entries</button>
                 <ul id="journal-entries" class="divide-y divide-gray-300 mt-4">
                 </ul>
                 <form id="new-entry-form" class="flex flex-col space-y-2 mt-4">
@@ -20,18 +32,20 @@
                     <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add Entry</button>
                 </form>
                 <button id="goBack" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
-            </div>
-            <div id="editModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-                <div class="bg-white rounded-lg p-4 max-w-xl w-full">
-                    <h3 class="text-lg font-bold">Edit Entry</h3>
-                    <textarea id="editText" class="w-full p-2 border rounded h-32"></textarea>
-                    <div class="mt-4 flex justify-end space-x-2">
-                        <button onclick="closeEditModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Cancel</button>
-                        <button onclick="saveEdit(entryID)" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save</button>
+                <div id="editModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+                    <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
+                        <div class="p-4">
+                            <textarea id="editEntryText" class="w-full h-64 p-2 border border-gray-300 rounded"></textarea>
+                        </div>
+                        <div class="p-4 flex justify-end">
+                            <button onclick="saveEditedEntry()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save</button>
+                            <button onclick="closeEditModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-2">Cancel</button>
+                        </div>
                     </div>
                 </div>
+                
             </div>
-            
+
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const urlParams = new URLSearchParams(window.location.search);
@@ -85,10 +99,7 @@
                     const entriesList = document.getElementById('journal-entries');
                     const listItem = document.createElement('li');
                     listItem.classList.add("flex", "justify-between", "items-center", "p-2", "hover:bg-gray-200");
-                     listItem.innerHTML = `<input type="radio" name="entryRadio" class="form-radio" data-entry-id="${data.EntryID}">
-            <span class="truncated text-left" onclick="toggleText(this)" data-entry-id="${data.EntryID}">${entryText}</span>
-            <button onclick="updateEntryText(${data.EntryID}, '${entryText.replace(/'/g, "\\'")}')" class="text-left">Edit</button>`;
-            
+                     listItem.innerHTML = `<input type="radio" name="entryRadio" class="form-radio" data-entry-id="${data.EntryID}"><span class="truncated" onclick="toggleText(this)">${entryText}</span>`;;
                     entriesList.appendChild(listItem);
                     document.getElementById('entry-text').value = '';
                 })
@@ -131,21 +142,15 @@ document.getElementById('deleteSelectedEntryBtn').addEventListener('click', func
 });
 
 
-
-
-function updateEntryText(eID, entryText) {
-    let entryID; 
-    entryID = eID; 
-    document.getElementById('editText').value = entryText; 
-    document.getElementById('editModal').classList.remove('hidden'); 
+function updateEntryText(entryID, entryText) {
+    document.getElementById('editEntryText').value = entryText; // Set text in textarea
+    document.getElementById('editModal').classList.remove('hidden'); // Show the modal
+    document.getElementById('editModal').dataset.entryId = entryID; // Store entryID in modal for later
 }
 
-function closeEditModal() {
-    document.getElementById('editModal').classList.add('hidden'); 
-}
-
-function saveEdit() {
-    const newText = document.getElementById('editText').value;
+function saveEditedEntry() {
+    const entryID = document.getElementById('editModal').dataset.entryId;
+    const newText = document.getElementById('editEntryText').value;
     fetch('/updateEntryText', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -153,14 +158,16 @@ function saveEdit() {
     })
     .then(response => response.json())
     .then(data => {
-        document.querySelector(`span[data-entry-id="${entryID}"]`).textContent = newText; // Update the display text
+        document.querySelector(`span[data-entry-id="${entryID}"]`).textContent = newText; // Update text on page
         closeEditModal();
     })
-    .catch(error => {
-        console.error('Error updating entry text:', error);
-        alert('Failed to update text.');
-    });
+    .catch(error => console.error('Error updating entry text:', error));
 }
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+}
+
 
 
 function deleteEntries() {
@@ -184,22 +191,7 @@ function deleteEntries() {
 }
 
         </script>
-       <style>
-        .truncated, .expanded {
-            max-width: 100%;  
-            overflow: hidden; 
-            text-overflow: ellipsis; 
-            cursor: pointer; 
-        }
-        .truncated {
-            white-space: nowrap;  
-        }
-        .expanded {
-            overflow: visible; 
-            white-space: normal; 
-        }
-    </style>
-    
+        
         
     </body>
 </html>
