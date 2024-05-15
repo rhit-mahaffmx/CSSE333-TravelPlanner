@@ -342,6 +342,27 @@ app.post('/getBudgetInfo', (req, res) => {
     connection.callProcedure(request);
 });
 
+
+app.post('/deleteExpense', (req, res) => {
+    const expenseID = parseInt(req.body.ExpenseID, 10);
+
+        const request = new Request('DeleteExpense', (err) => {
+            if (err) {
+                console.error('Request error:', err);
+                return res.status(500).send('Failed to execute procedure');
+            }
+            
+            res.json({ message: 'Expense deleted successfully' });
+        });
+
+        request.addParameter('ExpenseID', TYPES.Int, expenseID);
+
+        connection.callProcedure(request);
+   
+
+ 
+});
+
 app.post('/createExpense', (req, res) => {
     const UserID = req.session.userID;
     const { budgetID, category, cost, currency } = req.body;

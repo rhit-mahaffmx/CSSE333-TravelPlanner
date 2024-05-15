@@ -1,25 +1,47 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Journals</title>
-        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    </head>
-    <body class="bg-gray-100">
-        <div class="container mx-auto p-4">
-            <h1 class="text-2xl font-bold text-center text-gray-700">Create Journal</h1>
-            <form id="journal-form" class="flex flex-col space-y-2 mt-4">
-                <label for="journalName" class="font-bold">Journal Name:</label>
-                <input type="text" id="journalName" name="journalName" required class="p-2 border rounded">
-                <input type="submit" value="Create Journal" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            </form>
-            <h2 class="text-xl font-bold text-gray-700 mt-6">Your Journals</h2>
-            <ul id="journalsList" class="list-disc mx-auto py-4 px-6"></ul>
-            <button id="goBack" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
-        </div>
-    
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journals</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://source.unsplash.com/1600x900/?journal,writing');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .overlay {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-input {
+            background: #edf2f7;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="overlay container mx-auto p-4 max-w-lg">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Create Journal</h1>
+        <form id="journal-form" class="flex flex-col space-y-4 mt-4">
+            <div>
+                <label for="journalName" class="font-bold text-gray-700">Journal Name:</label>
+                <input type="text" id="journalName" name="journalName" required class="form-input p-2 border rounded w-full">
+            </div>
+            <input type="submit" value="Create Journal" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        </form>
+        <h2 class="text-2xl font-bold text-gray-800 mt-6 text-center">Your Journals</h2>
+        <ul id="journalsList" class="list-disc mx-auto py-4 px-6 bg-white bg-opacity-75 rounded shadow-md"></ul>
+        <button id="goBack" class="mt-4 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
+    </div>
+
     <script type="text/javascript">
-    
-    
         document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('journal-form').addEventListener('submit', function(event) {
                 event.preventDefault();
@@ -36,12 +58,10 @@
                 .catch(error => console.error('Error:', error));
             });
 
-  
             function fetchJournals() {
                 fetch('/journals', {
                     method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },
-                   
                 })
                 .then(response => response.json())
                 .then(journals => {
@@ -51,9 +71,9 @@
 
                     journals.forEach(journal => {
                         const item = document.createElement('li');
+                        item.classList.add("cursor-pointer", "hover:text-blue-500");
                         item.textContent = journal.Name;
                         item.onclick = function() {
-                            
                             window.location.href = `/journalPage.html?journalID=${journal.JournalID}`;
                         };
                         journalsList.appendChild(item);
@@ -62,14 +82,13 @@
                 .catch(error => console.error('Error fetching journals:', error));
             }
 
-            
             fetchJournals();
 
-           
             document.getElementById('goBack').addEventListener('click', function() {
                 window.location.href = 'landingPage.html'; 
             });
         });
     </script>
 </body>
+
 </html>

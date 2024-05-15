@@ -1,94 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Spending Limit Setter</title>
-        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    </head>
-    <body class="bg-gray-100">
-        <div class="container mx-auto p-4">
-            <h1 class="text-2xl font-bold text-center text-gray-700">Create New Budget</h1>
-            <form id="limitForm" class="flex flex-col space-y-2 mt-4">
-                <div>
-                    <label for="budgetName" class="font-bold">Budget Name:</label>
-                    <input type="text" id="budgetName" placeholder="Enter budget name" required class="p-2 border rounded">
-                </div>
-                <div>
-                    <label for="limit" class="font-bold">Spending Limit</label>
-                    <input type="number" id="limit" placeholder="Enter limit" required class="p-2 border rounded">
-                </div>
-                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mt-2">Create Budget</button>
-                <button id="goBack" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded mt-2">Go Back</button>
-            </form>
-            <h2 class="text-xl font-bold text-gray-700 mt-6">All Budgets</h2>
-            <ul id="budgetList" class="list-disc mx-auto py-4 px-6"></ul>
-        </div>
-        
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spending Limit Setter</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://source.unsplash.com/1600x900/?budget');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .overlay {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-input {
+            background: #edf2f7;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="overlay container mx-auto p-4 max-w-lg">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Create New Budget</h1>
+        <form id="limitForm" class="flex flex-col space-y-4 mt-4">
+            <div>
+                <label for="budgetName" class="font-bold text-gray-700">Budget Name:</label>
+                <input type="text" id="budgetName" placeholder="Enter budget name" required class="form-input p-2 border rounded w-full">
+            </div>
+            <div>
+                <label for="limit" class="font-bold text-gray-700">Spending Limit:</label>
+                <input type="number" id="limit" placeholder="Enter limit" required class="form-input p-2 border rounded w-full">
+            </div>
+            <div class="flex justify-between space-x-4">
+                <button type="submit" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Create Budget</button>
+                <button type="button" id="goBack" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
+            </div>
+        </form>
+        <h2 class="text-2xl font-bold text-gray-800 mt-6 text-center">All Budgets</h2>
+        <ul id="budgetList" class="list-disc mx-auto py-4 px-6 bg-white bg-opacity-75 rounded shadow-md"></ul>
+    </div>
+
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
-            
-        document.getElementById('limitForm').addEventListener('submit', function(event) {
-        event.preventDefault();
-    
-        const budgetName = document.getElementById('budgetName').value;
-        const limit = parseFloat(document.getElementById('limit').value);
-       
-    
-        fetch('/createBudget', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                Name: budgetName,
-                spendingLimit: limit,
-            
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            console.log(data);
-            alert('Budget created successfully!');
-            fetchBudgets();
-        })
-        .catch(error => console.error('Error:', error));
+        document.addEventListener('DOMContentLoaded', function () {
 
-        
-    });
-      
+            document.getElementById('limitForm').addEventListener('submit', function (event) {
+                event.preventDefault();
 
+                const budgetName = document.getElementById('budgetName').value;
+                const limit = parseFloat(document.getElementById('limit').value);
+
+                fetch('/createBudget', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        Name: budgetName,
+                        spendingLimit: limit,
+                    })
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data);
+                        alert('Budget created successfully!');
+                        fetchBudgets();
+                    })
+                    .catch(error => console.error('Error:', error));
+
+            });
 
             function fetchBudgets() {
                 fetch('/budgets', {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 })
-                .then(response => response.json())
-                .then(budgets => {
-                    console.log('Budgets fetched:', budgets);
-                    const budgetList = document.getElementById('budgetList');
-                    budgetList.innerHTML = ''; 
-                    console.log(budgets);
-                    budgets.forEach(budget => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = budget.budgetName ;
-                        listItem.onclick = () => {
-                            window.location.href = `/budgetManagement.html?budgetID=${budget.BudgetID}`;
-                        };
-                        budgetList.appendChild(listItem);
-                    });
-                })
-                .catch(error => console.error('Error fetching budgets:', error));
+                    .then(response => response.json())
+                    .then(budgets => {
+                        console.log('Budgets fetched:', budgets);
+                        const budgetList = document.getElementById('budgetList');
+                        budgetList.innerHTML = '';
+                        budgets.forEach(budget => {
+                            const listItem = document.createElement('li');
+                            listItem.classList.add("cursor-pointer", "hover:text-blue-500");
+                            listItem.textContent = budget.budgetName;
+                            listItem.onclick = () => {
+                                window.location.href = `/budgetManagement.html?budgetID=${budget.BudgetID}`;
+                            };
+                            budgetList.appendChild(listItem);
+                        });
+                    })
+                    .catch(error => console.error('Error fetching budgets:', error));
             }
-            
+
             fetchBudgets();
-            document.getElementById('goBack').addEventListener('click', function() {
-            window.location.href = 'landingPage.html'; 
+
+            document.getElementById('goBack').addEventListener('click', function () {
+                window.location.href = 'landingPage.html';
+            });
         });
-        });
-       
     </script>
     <script src="connectConcept.js"></script>
 </body>
+
 </html>

@@ -1,32 +1,65 @@
 <!DOCTYPE html>
-<html>
-    <head>
-        <title>Create Travel Plans</title>
-        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    </head>
-    <body class="bg-gray-100">
-        <div class="container mx-auto p-4">
-            <h1 class="text-2xl font-bold text-center text-gray-700">Create Travel Plans</h1>
-            <form id="itinerary-form" class="flex flex-col space-y-2 mt-4">
-                <label for="travelPlanName" class="font-bold">Travel Plan Name:</label>
-                <input type="text" id="travelPlanName" name="travelPlanName" required class="p-2 border rounded"><br>
-                <label for="destinationID" class="font-bold">Destination ID:</label>
-                <input type="text" id="destinationID" name="destinationID" required class="p-2 border rounded"><br>
-                <label for="itinerary" class="font-bold">Itinerary:</label>
-                <textarea id="itinerary" name="itinerary" required class="p-2 border rounded"></textarea><br>
-                <label for="localEmergencyContacts" class="font-bold">Local Emergency Contacts:</label>
-                <textarea id="localEmergencyContacts" name="localEmergencyContacts" required class="p-2 border rounded"></textarea><br>
-                <input type="submit" value="Create Itinerary" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
-            </form>
-            <p id="message" class="mt-4 text-gray-700"></p>
-            <h2 class="text-xl font-bold text-gray-700 mt-6">Your Plans</h2>
-            <ul id="plansList" class="list-disc mx-auto py-4 px-6"></ul>
-            <button id="goBack" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
-        </div>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Travel Plans</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://source.unsplash.com/1600x900/?travel,planning');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .overlay {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-input {
+            background: #edf2f7;
+        }
+
+        .form-textarea {
+            background: #edf2f7;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="overlay container mx-auto p-4 max-w-lg">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4">Create Travel Plans</h1>
+        <form id="itinerary-form" class="flex flex-col space-y-4 mt-4">
+            <div>
+                <label for="travelPlanName" class="font-bold text-gray-700">Travel Plan Name:</label>
+                <input type="text" id="travelPlanName" name="travelPlanName" required class="form-input p-2 border rounded w-full">
+            </div>
+            <div>
+                <label for="destinationID" class="font-bold text-gray-700">Destination ID:</label>
+                <input type="text" id="destinationID" name="destinationID" required class="form-input p-2 border rounded w-full">
+            </div>
+            <div>
+                <label for="itinerary" class="font-bold text-gray-700">Itinerary:</label>
+                <textarea id="itinerary" name="itinerary" required class="form-textarea p-2 border rounded w-full"></textarea>
+            </div>
+            <div>
+                <label for="localEmergencyContacts" class="font-bold text-gray-700">Local Emergency Contacts:</label>
+                <textarea id="localEmergencyContacts" name="localEmergencyContacts" required class="form-textarea p-2 border rounded w-full"></textarea>
+            </div>
+            <input type="submit" value="Create Itinerary" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        </form>
+        <p id="message" class="mt-4 text-gray-700"></p>
+        <h2 class="text-2xl font-bold text-gray-800 mt-6 text-center">Your Plans</h2>
+        <ul id="plansList" class="list-disc mx-auto py-4 px-6 bg-white bg-opacity-75 rounded shadow-md"></ul>
+        <button id="goBack" class="mt-4 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
+    </div>
+
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            
-            // Handle the form submission
             document.getElementById('itinerary-form').addEventListener('submit', function(event) {
                 event.preventDefault();
                 const travelPlanName = document.getElementById('travelPlanName').value;
@@ -47,7 +80,7 @@
                 .then(response => response.json())
                 .then(data => {
                     document.getElementById('message').innerText = data.message || 'Travel plans created successfully!';
-                    fetchPlans(); // Fetch updated plans
+                    fetchPlans();
                 })
                 .catch(error => {
                     console.error('Error:', error);
@@ -55,16 +88,15 @@
                 });
             });
 
-            // Fetch and display existing plans
             function fetchPlans() {
                 fetch('/plans')
                 .then(response => response.json())
                 .then(plans => {
                     const plansList = document.getElementById('plansList');
                     plansList.innerHTML = '';
-                    console.log(plans);
                     plans.forEach(plan => {
                         const item = document.createElement('li');
+                        item.classList.add("cursor-pointer", "hover:text-blue-500");
                         item.textContent = plan.TravelPlanName;
                         item.onclick = function() {
                             window.location.href = `/PlansPage.html?planID=${plan.PlanID}`;
@@ -77,11 +109,11 @@
 
             fetchPlans();
 
-            // Go back to the landing page
             document.getElementById('goBack').addEventListener('click', function() {
                 window.location.href = 'landingPage.html';
             });
         });
     </script>
 </body>
+
 </html>

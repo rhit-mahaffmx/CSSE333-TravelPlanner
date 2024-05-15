@@ -1,54 +1,85 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Travel Plan Details</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://source.unsplash.com/1600x900/?travel,planning');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .overlay {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .form-input {
+            background: #edf2f7;
+        }
+
+        .form-textarea {
+            background: #edf2f7;
+        }
+    </style>
 </head>
-<body class="bg-gray-100">
-    <div class="container mx-auto p-4">
-        <h1 id="plan-title" class="text-2xl font-bold text-center text-gray-700"></h1>
-        <button id="deleteTravelPlanBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Delete Travel Plan</button>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="overlay container mx-auto p-4 max-w-lg">
+        <h1 id="plan-title" class="text-3xl font-bold text-center text-gray-800 mb-4">Travel Plan Details</h1>
+        <div class="flex justify-between space-x-2 mb-4">
+            <button id="deleteTravelPlanBtn" class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">Delete Travel Plan</button>
+        </div>
         <div class="mt-4">
             <h2 class="text-lg">Destination ID: <span id="destination-id" class="font-semibold"></span></h2>
-            <div>
-                <label for="travel-plan-name" class="font-bold">Travel Plan Name:</label>
-                <input type="text" id="travel-plan-name" class="p-2 border rounded w-full">
+            <div class="mt-2">
+                <label for="travel-plan-name" class="font-bold text-gray-700">Travel Plan Name:</label>
+                <input type="text" id="travel-plan-name" class="form-input p-2 border rounded w-full">
             </div>
         </div>
-        <div>
-            <h3 class="font-bold mt-2">Itinerary:</h3>
-            <textarea id="itinerary" class="p-2 border rounded w-full"></textarea>
-            <h3 class="font-bold mt-2">Local Emergency Contacts:</h3>
-            <p id="emergency-contacts" class="p-2 border rounded"></p>
+        <div class="mt-4">
+            <h3 class="font-bold text-gray-700 mt-2">Itinerary:</h3>
+            <textarea id="itinerary" class="form-textarea p-2 border rounded w-full h-40"></textarea>
+            <h3 class="font-bold text-gray-700 mt-2">Local Emergency Contacts:</h3>
+            <textarea id="emergency-contacts" class="form-textarea p-2 border rounded w-full h-24" readonly></textarea>
         </div>
-        <button id="saveChanges" class="mt-4 bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save Changes</button>
-        <button id="goBack" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
+        <div class="flex justify-between space-x-2 mt-4">
+            <button id="saveChanges" class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">Save Changes</button>
+            <button id="goBack" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
+        </div>
     </div>
+
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function () {
             const urlParams = new URLSearchParams(window.location.search);
             const planID = urlParams.get('planID');
 
             const deleteBtn = document.getElementById('deleteTravelPlanBtn');
-            deleteBtn.addEventListener('click', function() {
+            deleteBtn.addEventListener('click', function () {
                 deleteTravelPlan(planID);
             });
 
             function deleteTravelPlan() {
                 fetch(`/deleteTravelPlan`, {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ PlanID: planID })
                 })
-                .then(response => response.json())
-                .then(data => {
-                    alert('Travel plan deleted successfully');
-                    window.location.href = 'TravelPlanner.html';
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    alert('Failed to delete travel plan');
-                });
+                    .then(response => response.json())
+                    .then(data => {
+                        alert('Travel plan deleted successfully');
+                        window.location.href = 'TravelPlanner.html';
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        alert('Failed to delete travel plan');
+                    });
             }
 
             if (planID) {
@@ -64,13 +95,13 @@
                     .catch(error => console.error('Error fetching plan:', error));
             }
 
-            document.getElementById('saveChanges').addEventListener('click', function() {
+            document.getElementById('saveChanges').addEventListener('click', function () {
                 const updatedName = document.getElementById('travel-plan-name').value;
                 const updatedItinerary = document.getElementById('itinerary').value;
                 updateTravelPlan(planID, updatedName, updatedItinerary);
             });
 
-            document.getElementById('goBack').addEventListener('click', function() {
+            document.getElementById('goBack').addEventListener('click', function () {
                 window.location.href = 'landingPage.html';
             });
         });
@@ -81,12 +112,13 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ PlanID: planID, TravelPlanName: updatedName, Itinerary: updatedItinerary })
             })
-            .then(response => response.json())
-            .then(data => {
-               
-            })
-            .catch(error => console.error('Error updating travel plan:', error));
+                .then(response => response.json())
+                .then(data => {
+                    alert('Travel plan updated successfully');
+                })
+                .catch(error => console.error('Error updating travel plan:', error));
         }
     </script>
 </body>
+
 </html>
