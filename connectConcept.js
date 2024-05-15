@@ -186,7 +186,6 @@ app.post("/Journal", (req, res) => {
         });
 
         connection.callProcedure(request);
-    ;
 });
 app.post("/createReview", (req, res) => {
     const  Text  = req.body.Text;
@@ -280,7 +279,6 @@ app.post('/journals', (req, res) => {
 });
 
 app.post('/getUserName', (req, res) => {
-    console.log(req.session.userName);
     res.send({Username: req.session.userName});
 });
 app.get('/budgets', (req, res) => {
@@ -461,6 +459,78 @@ app.post('/getReviews', (req, res) => {
 
     connection.callProcedure(request);
 });
+app.post('/getReviewsWithDestination', (req, res) => {
+    const destinationID = parseInt(req.body.DestinationID, 10);
+    const request = new Request('GetReviewsWithDestination', (err) => {
+        if (err) {
+            console.error('Error fetching reviews:', err);
+            return res.status(500).json({ message: 'Failed to retrieve reviews' });
+        }
+    });
+
+    request.addParameter('DestinationID', TYPES.Int, destinationID);
+    request.addOutputParameter('ReviewText', TYPES.NVarChar, );
+
+    request.on('returnValue', (parameterName, value, metadata) => {
+        if (parameterName === 'ReviewText') {
+           console.log(value);
+            const reviews = JSON.parse(value);
+            res.json(reviews);
+         
+            
+        }
+    });
+
+    connection.callProcedure(request);
+});
+
+app.post('/plansWithDestinations', (req, res) => {
+    const userID = req.session.userID; 
+    const destinationID = parseInt(req.body.DestinationID, 10);
+
+    if (!userID) {
+        return res.status(401).send('User not authenticated');
+    }
+
+    const request = new Request('GetTravelPlansWithDestination', (err, rowCount, rows) => {
+        if (err) {
+            console.error('Error fetching Travel Plans:', err);
+            return res.status(500).send('Failed to retrieve Plans');
+        }
+
+      
+    });
+
+    request.addParameter('UserID', TYPES.Int, userID);
+    request.addParameter('DestinationID', TYPES.Int, destinationID);
+    request.addOutputParameter('TravelPlanName', TYPES.VarChar);
+    request.on('returnValue', (parameterName, value, metadata) => {
+        
+        res.json(JSON.parse(value));
+    });
+    connection.callProcedure(request);
+});
+
+app.post('/getDestination', (req, res) => {
+    const destinationID = parseInt(req.body.DestinationID, 10);
+    const request = new Request('GetDestination', (err) => {
+        if (err) {
+            console.error('Error fetching destination:', err);
+            return res.status(500).json({ message: 'Failed to retrieve destination' });
+        }
+    });
+
+    request.addParameter('DestinationID', TYPES.Int, destinationID);
+    request.addOutputParameter('DestinationText', TYPES.NVarChar, );
+
+    request.on('returnValue', (parameterName, value, metadata) => {
+        console.log(value);
+        const destination = JSON.parse(value);
+        res.json(destination);
+    });
+
+    connection.callProcedure(request);
+});
 
 app.post('/getEntries', (req, res) => {
     const journalID = parseInt(req.body.JournalID, 10);
@@ -605,7 +675,6 @@ app.get('/plans', (req, res) => {
 });
 
 app.post('/destinations', (req, res) => {
-  
     const request = new Request('GetDestinations', (err, rowCount, rows) => {
         if (err) {
             console.error('Error fetching destinations:', err);
@@ -614,14 +683,12 @@ app.post('/destinations', (req, res) => {
         console.log('destinations api called');
        return rows;
     });
- 
-   
- 
+    request.addOutputParameter('DestinationName', TYPES.VarChar);
+
     request.on('returnValue', (parameterName, value, metadata) => {
         console.log(value);
         res.json(JSON.parse(value));
     });
-    request.addOutputParameter('DestinationName', TYPES.VarChar);
     connection.callProcedure(request);
 });
 

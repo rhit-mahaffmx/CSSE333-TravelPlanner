@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://source.unsplash.com/1600x900/?journal,writing');
+            background-size: cover;
+            background-attachment: fixed;
+        }
+
+        .overlay {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .truncated {
+            max-width: 100%;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        .expanded {
+            white-space: normal;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 flex items-center justify-center h-screen">
+    <div class="overlay container mx-auto p-4 max-w-lg">
+        <h1 class="text-3xl font-bold text-center text-gray-800 mb-4"><span id="destinationName">Loading Destination</span>, <span id="countryName">Loading Country</span></h1>
+        <h1 class="text-xl font-bold text-gray-700">Language: <span id="destinationLanguage">Loading language</span></h1>
+        <h1 class="text-xl font-bold text-gray-700">Tips: <span id="destinationTips">Loading tips</span></h1>
+        <h1 class="text-xl font-bold text-gray-700">Customs: <span id="destinationCustoms">Loading customs</span></h1>
+        <div class="flex justify-between space-x-2 mb-4">
+            <button id="seeReviews" class="bg-blue-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">See Reviews</button>
+            <button id="seeTravelPlans" class="bg-blue-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">See Travel Plans</button>
+        </div>
+        <button id="goBack" class="mt-4 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
+    </div>
+
+    <div id="editModal" class="hidden fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg overflow-hidden shadow-xl transform transition-all sm:max-w-lg sm:w-full">
+            <div class="p-4">
+                <textarea id="editEntryText" class="w-full h-64 p-2 border border-gray-300 rounded"></textarea>
+            </div>
+            <div class="p-4 flex justify-end">
+                <button onclick="saveEditedEntry()" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save</button>
+                <button onclick="closeEditModal()" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-2">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const destinationID = urlParams.get('destinationID');
+            console.log(destinationID);
+            if (destinationID) {
+                getDestination(destinationID);
+            }
+
+            function getDestination(destinationID) {
+                console.log('Fetching reviews...');
+                fetch('/getDestination', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ DestinationID: parseInt(destinationID) })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    data.forEach(destination => {
+                        console.log(destination.Name);
+                        document.getElementById('destinationName').innerHTML = destination.Name;
+                        document.getElementById('countryName').innerHTML = destination.Country;
+                        document.getElementById('destinationLanguage').innerHTML = destination.Language;
+                        document.getElementById('destinationCustoms').innerHTML = destination.Customs;
+                        document.getElementById('destinationTips').innerHTML = destination.Tips;
+                    });
+                })
+                .catch(error => console.error('Error fetching reviews:', error));
+            }
+
+            document.getElementById('goBack').addEventListener('click', function() {
+                window.location.href = 'Destination.html';
+            });
+        });
+
+        function toggleText(element) {
+            if (element.classList.contains('truncated')) {
+                element.classList.remove('truncated');
+                element.classList.add('expanded');
+            } else {
+                element.classList.add('truncated');
+                element.classList.remove('expanded');
+            }
+        }
+
+        document.getElementById('seeReviews').addEventListener('click', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const destinationID = urlParams.get('destinationID');
+            window.location.href = `/destinationReviewsPage.html?destinationID=${destinationID}`;
+        });
+
+        document.getElementById('seeTravelPlans').addEventListener('click', function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const destinationID = urlParams.get('destinationID');
+            window.location.href = `/destinationTravelPlansPage.html?destinationID=${destinationID}`;
+        });
+    </script>
+</body>
+
+</html>

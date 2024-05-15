@@ -21,21 +21,26 @@
 
             function fetchDestinations() {
                 fetch('/destinations', {
-                    method: 'POST',
+                    method: 'POST', 
                     headers: { 'Content-Type': 'application/json' },
                 })
                 .then(response => response.json())
                 .then(destinations => {
-                    console.log(destinations);
+                    console.log(destinations[0]);
                     const destinationList = document.getElementById('destinationList');
-                    destinationList.innerHTML = ''; 
+                    destinationList.innerHTML = '';
+
                     destinations.forEach(destination => {
-                        const listItem = document.createElement('li');
-                        listItem.textContent = `${destination.Name}`;
-                        destinationList.appendChild(listItem);
+                        const item = document.createElement('li');
+                        item.classList.add("cursor-pointer", "hover:text-blue-500");
+                        item.textContent = destination.Name;
+                        item.onclick = function() {
+                            window.location.href = `/destinationPage.html?destinationID=${destination.DestinationID}`;
+                        };
+                        destinationList.appendChild(item);
                     });
                 })
-                .catch(error => console.error('Error fetching destinations:', error));
+                .catch(error => console.error('Error fetching journals:', error));
             }
     });
     </script>
