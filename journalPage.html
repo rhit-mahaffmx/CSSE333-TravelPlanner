@@ -126,7 +126,8 @@
                 const listItem = document.createElement('li');
                 listItem.classList.add("flex", "justify-between", "items-center", "p-2", "hover:bg-gray-200");
                 listItem.innerHTML = `<input type="radio" name="entryRadio" class="form-radio" data-entry-id="${data.EntryID}">
-                <span class="truncated" onclick="toggleText(this)">${entryText}</span>`;
+                <span class="truncated" onclick="toggleText(this)">${entryText}</span>`
+
                 entriesList.appendChild(listItem);
                 document.getElementById('entry-text').value = '';
             })
