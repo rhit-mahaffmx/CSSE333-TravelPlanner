@@ -1,22 +1,32 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Destinations</title>
-        <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
-    </head>
-    <body class="bg-gray-100 flex items-center justify-center min-w-full">
-        <div class="p-4 w-full max-w-4xl">
-            <h1 class="text-2xl font-bold text-center text-gray-700">All Destinations</h1>
-            <ul id="destinationList" class="list-none mx-auto py-4 px-6 text-center">
-               </ul>
-            <button id="goBack" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded  min-w-full">Go Back</button>
-        </div>
-    
-      
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Destinations</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url('https://source.unsplash.com/featured/?travel');
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+        .backdrop {
+            backdrop-filter: blur(5px);
+        }
+    </style>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="p-4 w-full max-w-4xl backdrop bg-white bg-opacity-70 rounded-lg shadow-lg">
+        <h1 class="text-2xl font-bold text-center text-gray-700">All Destinations</h1>
+        <ul id="destinationList" class="list-none mx-auto py-4 px-6 text-center">
+        </ul>
+        <button id="goBack" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded min-w-full">Go Back</button>
+    </div>
+
     <script>
-    document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', function() {
             fetchDestinations();
 
             function fetchDestinations() {
@@ -32,7 +42,7 @@
 
                     destinations.forEach(destination => {
                         const item = document.createElement('li');
-                        item.classList.add("cursor-pointer", "hover:text-blue-500");
+                        item.classList.add("cursor-pointer", "hover:text-blue-500", "py-2");
                         item.textContent = destination.Name;
                         item.onclick = function() {
                             window.location.href = `/destinationPage.html?destinationID=${destination.DestinationID}`;
@@ -40,14 +50,12 @@
                         destinationList.appendChild(item);
                     });
                 })
-                .catch(error => console.error('Error fetching journals:', error));
+                .catch(error => console.error('Error fetching destinations:', error));
             }
-    });
-    </script>
+        });
 
-    <script>
         document.getElementById('goBack').addEventListener('click', function() {
-            window.location.href = 'landingPage.html'; // Replace with your landing page URL
+            window.location.href = 'landingPage.html'; 
         });
     </script>
     <script src="connectConcept.js"></script>

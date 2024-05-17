@@ -28,7 +28,7 @@ let config = {
 };  
 let connection = new Connection(config);  
 connection.on('connect', function(err) {
-    // If no error, then good to proceed.
+    
     if(err) {
         console.log('Error: ', err)
     } 
@@ -63,6 +63,17 @@ app.get("/Con", (req, res)=>{
     connection.connect();
     //res.send({val:"Connected"})
 })
+
+app.get('/logout', (req, res) => {
+    req.session.destroy(err => {
+        if(err) {
+            return res.status(500).send('Failed to logout');
+        }
+        res.redirect('/');
+    });
+});
+
+
 app.get("/DisCon", (req, res)=>{
     connection.close();
     //res.send({val:"Disconnected"})
@@ -157,6 +168,32 @@ app.post("/Login", (req, res)=>{
     
     
 })
+
+app.post('/deleteUser', (req, res) => {
+    const userID = req.session.userID;
+
+    if (!userID) {
+        return res.status(401).send('User not authenticated');
+    }
+
+    const request = new Request('DeleteUserProfile', (err) => {
+        if (err) {
+            console.error('Error deleting user profile:', err);
+            return res.status(500).json({ message: 'Failed to delete user profile' });
+        }
+        req.session.destroy(err => {
+            if (err) {
+                console.error('Error destroying session:', err);
+                return res.status(500).json({ message: 'Failed to delete user profile' });
+            }
+            res.json({ message: 'User deleted successfully' });
+        });
+    });
+
+    request.addParameter('UserID', TYPES.Int, userID);
+    connection.callProcedure(request);
+});
+
 app.post("/Journal", (req, res) => {
       const  Name  = req.body.Name;
       if (!Name) {
@@ -563,7 +600,7 @@ app.post('/journalEntry', (req, res) => {
             console.error('Error creating entry:', err);
             return res.status(500).send('Failed to create entry');
         }
-        // Sending a response with newly added entry details
+      
         res.json({ journalID: JournalID, entryText: EntryText, dateTime: new Date() });
     });
     request.addParameter('JournalID', TYPES.Int, JournalID);
