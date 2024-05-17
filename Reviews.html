@@ -80,10 +80,16 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data);
-                    console.log('Testing before alert')
-                    alert('Review created successfully!');
-                    getReviews();
+                    if(data.num == 0){
+                        alert('Review created successfully!');
+                        getReviews();
+                    }else if(data.num == 1){
+                        alert('Destination does not exist');
+                    }else if(data.num == 2){
+                        alert('Star Rating is invalid');
+                    }
+                    
+                   
                 })
                 .catch(error => console.error('Error:', error));
             });
