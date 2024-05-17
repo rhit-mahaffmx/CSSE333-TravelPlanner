@@ -69,9 +69,18 @@
             const urlParams = new URLSearchParams(window.location.search);
             const journalID = urlParams.get('journalID');
             console.log(journalID);
-            if (journalID) {
+
+            fetch('/getJournalInfo', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ JournalID: parseInt(journalID) })
+            })
+            .then(response => response.json())
+            .then(journal => {
+                document.getElementById('journal-title').textContent = journal.Name; 
                 fetchEntries(journalID);
-            }
+            })
+            .catch(error => console.error('Error fetching budget info:', error));
 
             function fetchEntries(journalID) {
                 fetch(`/getEntries`, {

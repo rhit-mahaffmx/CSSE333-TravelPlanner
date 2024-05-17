@@ -78,7 +78,7 @@
                 return res.json();
             }).then((data) => {
                 document.getElementById('LoginStatus').innerHTML = data.val;
-                if (data.val === 0) {
+                if (data.val === 'Login Successful') {
                     window.location.href = 'landingPage.html';
                 }
             });

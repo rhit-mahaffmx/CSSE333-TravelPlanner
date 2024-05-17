@@ -26,6 +26,12 @@
         .form-textarea {
             background: #edf2f7;
         }
+
+.vertical-menu {
+  width: 475px;
+  height: 300px;
+  overflow-y: auto;
+}
     </style>
 </head>
 
@@ -49,7 +55,10 @@
         </form>
 
         <h2 class="text-2xl font-bold text-gray-800 mt-6 text-center">Your Reviews</h2>
-        <ul id="reviewsList" class="list-disc mx-auto py-4 px-6 bg-white bg-opacity-75 rounded shadow-md"></ul>
+        <div class="vertical-menu">
+            <ul id="reviewsList" class="list-disc mx-auto py-4 px-6 bg-white bg-opacity-75 rounded shadow-md"></ul>
+        </div>
+        
 
         <button id="goBack" class="mt-4 bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Go Back</button>
     </div>
@@ -71,6 +80,9 @@
                 })
                 .then(response => response.json())
                 .then(data => {
+                    console.log(data);
+                    console.log('Testing before alert')
+                    alert('Review created successfully!');
                     getReviews();
                 })
                 .catch(error => console.error('Error:', error));
@@ -89,7 +101,7 @@
                     data.forEach(review => {
                         const listItem = document.createElement('li');
                         listItem.classList.add("flex", "justify-between", "items-center", "p-2", "hover:bg-gray-200");
-                        listItem.innerHTML = `<span>Destination: ${review.DestinationID} - ${review.ReviewText} - Rating: ${review.StarRating}</span>`;
+                        listItem.innerHTML = `<span>Destination: ${review.Name} - ${review.ReviewText} - Rating: ${review.StarRating}</span>`;
                         reviewsList.appendChild(listItem);
                     });
                 })

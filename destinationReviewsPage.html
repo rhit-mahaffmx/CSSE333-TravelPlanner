@@ -57,7 +57,7 @@
                     data.forEach(review => {
                         const listItem = document.createElement('li');
                         listItem.classList.add("flex", "justify-between", "items-center", "p-2", "hover:bg-gray-200");
-                        listItem.innerHTML = `<span>User: ${review.UserID} - ${review.ReviewText} - Rating: ${review.StarRating}</span>`;
+                        listItem.innerHTML = `<span>User: ${review.UserName} - ${review.ReviewText} - Rating: ${review.StarRating}</span>`;
                         reviewsList.appendChild(listItem);
                     });
                 })

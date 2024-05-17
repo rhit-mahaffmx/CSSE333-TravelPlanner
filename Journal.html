@@ -53,7 +53,13 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    fetchJournals(); 
+                    if(data.num == 0){
+                        alert('Journal created successfully!');
+                        fetchJournals(); 
+                    }
+                    if(data.num == 1){
+                        alert('Journal name cannot be duplicated');
+                    }
                 })
                 .catch(error => console.error('Error:', error));
             });
@@ -65,7 +71,6 @@
                 })
                 .then(response => response.json())
                 .then(journals => {
-                    console.log(journals[0]);
                     const journalsList = document.getElementById('journalsList');
                     journalsList.innerHTML = '';
 

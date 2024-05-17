@@ -150,11 +150,13 @@ app.post("/Login", (req, res)=>{
         if(loginHash == hash){
             console.log("Login Success");
             returnVal = 0;
+            res.send({val:'Login Successful'});
         }else{
             console.log("Login Fail");
             returnVal = 1;
+            res.send({val:'Incorrect UserName/Password'});
         }
-        res.send({val:returnVal});
+        
         }
     });
     
@@ -197,13 +199,9 @@ app.post('/deleteUser', (req, res) => {
 app.post("/Journal", (req, res) => {
       const  Name  = req.body.Name;
       if (!Name) {
-        
           return res.status(400).send({ message: "Invalid input: Name is required." });
         }
-        
     const userID = req.session.userID;
-    console.log("userID:", userID);
-    console.log(req.body);
     const userName = req.session.userName;
         const request = new Request("CreateJournal", (err) => {
             if (err) {
@@ -215,11 +213,11 @@ app.post("/Journal", (req, res) => {
         request.addParameter('userID', TYPES.Int, userID);
         request.addParameter('userName', TYPES.VarChar, userName);
         request.addParameter('Name', TYPES.VarChar, Name);
+        request.addOutputParameter('Return', TYPES.Int);
 
-        request.on("requestCompleted", () => {
-            console.log("Journal created successfully");
-            console.log("userID:", userID);
-            res.send({ message: "Journal created successfully" });
+        request.on('returnValue', function (parameterName, value, metadata) { 
+            res.send({num: value});
+            console.log(value);
         });
 
         connection.callProcedure(request);
@@ -251,14 +249,14 @@ app.post("/createReview", (req, res) => {
           }
       });
       request.addParameter('UserID', TYPES.Int, userID);
-      request.addParameter('DestinationID', TYPES.VarChar, Destination);
+      request.addParameter('DestinationName', TYPES.VarChar, Destination);
       request.addParameter('StarRating', TYPES.Int, Rating);
       request.addParameter('ReviewText', TYPES.VarChar, Text);
 
       request.on("requestCompleted", () => {
           console.log("Review created successfully");
           console.log("userID:", userID);
-          //res.send({ message: "Review created successfully" });
+          res.send({ message: "Review created successfully" });
       });
 
       connection.callProcedure(request);
@@ -283,8 +281,6 @@ app.post("/CreateBudget", (req, res) => {
 
     request.on("requestCompleted", () => {
         if (res.headersSent) return;
-        console.log("Budget created successfully");
-        console.log("userID:", userID);
         res.send({ message: "Budget created successfully" });
     });
 
@@ -377,6 +373,25 @@ app.post('/getBudgetInfo', (req, res) => {
     connection.callProcedure(request);
 });
 
+app.post('/getJournalInfo', (req, res) => {
+    const journalID = parseInt(req.body.JournalID, 10);
+    const request = new Request('GetJournalInfo', (err, rowCount, rows) => {
+        if (err) {
+            console.error('Error fetching name:', err);
+            return res.status(500).send('Failed to retrieve name');
+        }
+        return rows;
+    });
+
+   
+    request.addParameter('JournalID', TYPES.Int, journalID);
+
+    request.on('row', function(data) {
+        //console.log(data[0].value)
+        res.send({Name: data[0].value});
+    });
+    connection.callProcedure(request);
+});
 
 app.post('/deleteExpense', (req, res) => {
     const expenseID = parseInt(req.body.ExpenseID, 10);
