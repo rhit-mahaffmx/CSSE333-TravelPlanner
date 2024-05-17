@@ -243,12 +243,18 @@
                     })
                 }).then(response => response.json())
                 .then(data => {
-                    if (data.message === "Expense created successfully.") {
+                    if(data.num == 0){
                         balance -= cost;
                         updateRemainingBudget();
                         loadExpenses(budgetID); 
+                        alert('Expense created successfully');
                     }
-                    alert(data.message);
+                    if(data.num == 1){
+                        alert('Cost must be positive');
+                    }
+                    if(data.num == 2){
+                        alert('Budget is overdrawn');
+                    }
                 })
                 .catch(error => console.error('Error creating expense:', error));
             });

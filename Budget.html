@@ -68,9 +68,16 @@
                 })
                     .then(response => response.json())
                     .then(data => {
-                        console.log(data);
+                        if(data.num == 0){
                         alert('Budget created successfully!');
-                        fetchBudgets();
+                        fetchBudgets(); 
+                    }
+                    if(data.num == 1){
+                        alert('Budget name cannot be duplicated');
+                    }
+                    if(data.num == 2){
+                        alert('Spending limit must be a positive number');
+                    }
                     })
                     .catch(error => console.error('Error:', error));
 

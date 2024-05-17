@@ -98,7 +98,7 @@ app.post("/CreateProf", (req, res)=>{
     request.addParameter("PasswordHash", TYPES.VarChar, hash);
     request.on("requestCompleted", (req)=>{
         console.log("Success");
-        //res.send({val:0});
+        res.send({val:0});
     })
 
     connection.callProcedure(request);
@@ -217,7 +217,6 @@ app.post("/Journal", (req, res) => {
 
         request.on('returnValue', function (parameterName, value, metadata) { 
             res.send({num: value});
-            console.log(value);
         });
 
         connection.callProcedure(request);
@@ -262,6 +261,44 @@ app.post("/createReview", (req, res) => {
       connection.callProcedure(request);
   ;
 });
+app.post("/createReview2", (req, res) => {
+    const  Text  = req.body.Text;
+    const  Rating  = req.body.Rating;
+    const  Destination  = req.body.Destination;
+    if (!Rating) {
+      
+        return res.status(400).send({ message: "Invalid input: Rating is required." });
+    }
+    if (!Destination) {
+      
+        return res.status(400).send({ message: "Invalid input: Destination is required." });
+    }
+    if (!Text) {
+      
+        return res.status(400).send({ message: "Invalid input: Review cannot be empty." });
+    }
+      
+  const userName = req.body.userName;
+      const request = new Request("CreateReviewWithName", (err) => {
+          if (err) {
+              console.error("Failed to execute procedure: ", err);
+              res.status(500).send({ message: "Failed to create review" });
+              return;
+          }
+      });
+      request.addParameter('UserName', TYPES.VarChar, userName);
+      request.addParameter('DestinationName', TYPES.VarChar, Destination);
+      request.addParameter('StarRating', TYPES.Int, Rating);
+      request.addParameter('ReviewText', TYPES.VarChar, Text);
+
+      request.on("requestCompleted", () => {
+          console.log("Review created successfully");
+          res.send({ message: "Review created successfully" });
+      });
+
+      connection.callProcedure(request);
+  ;
+});
 app.post("/CreateBudget", (req, res) => {
     const  Name  = req.body.Name;
     const spendingLimit = req.body.spendingLimit;
@@ -279,9 +316,10 @@ app.post("/CreateBudget", (req, res) => {
     request.addParameter('spendingLimit', TYPES.Float, spendingLimit);
     request.addParameter('budgetName', TYPES.VarChar, Name);
 
-    request.on("requestCompleted", () => {
-        if (res.headersSent) return;
-        res.send({ message: "Budget created successfully" });
+    request.addOutputParameter('Return', TYPES.Int);
+    request.on('returnValue', function (parameterName, value, metadata) { 
+        //if (res.headersSent) return;
+        res.send({num: value});
     });
 
     connection.callProcedure(request);
@@ -416,12 +454,11 @@ app.post('/deleteExpense', (req, res) => {
 app.post('/createExpense', (req, res) => {
     const UserID = req.session.userID;
     const { budgetID, category, cost, currency } = req.body;
-    const request = new Request('CreateExpense', (err) => {
+    const request = new Request('CreateExpense', (err, rowCount, rows) => {
         if (err) {
             console.error('Error creating expense:', err);
             return res.status(500).send('Failed to create expense');
         }
-        res.json({ message: 'Expense created successfully' });
     });
 
     request.addParameter('BudgetID', TYPES.Int, budgetID);
@@ -429,6 +466,12 @@ app.post('/createExpense', (req, res) => {
     request.addParameter('Currency', TYPES.VarChar, currency);   
     request.addParameter('Cost', TYPES.Float, cost);
     request.addParameter('UserID', TYPES.Int, UserID);
+    request.addOutputParameter('Return', TYPES.Int);
+
+    request.on('returnValue', function (parameterName, value, metadata) { 
+        //if (res.headersSent) return;
+        res.send({num: value});
+    });
 
     connection.callProcedure(request);
 });
@@ -644,6 +687,31 @@ app.post('/create-travel-plans', (req, res) => {
     request.addParameter('Itinerary', TYPES.VarChar, itinerary);
     request.addParameter('LocalEmergencyContacts', TYPES.VarChar, localEmergencyContacts);
     request.addParameter('travelPlanName', TYPES.VarChar, travelPlanName);
+
+    connection.callProcedure(request);
+});
+
+app.post('/createDestination', (req, res) => {
+    const { destinationName, country, language, customs, tips } = req.body;
+
+    const request = new Request('CreateDestination', (err, rowCount, rows) => {
+        if (err) {
+            console.error('Error creating expense:', err);
+            return res.status(500).send('Failed to create expense');
+        }
+    });
+
+    request.addParameter('DestinationName', TYPES.VarChar, destinationName);
+    request.addParameter('Country', TYPES.VarChar, country);
+    request.addParameter('Language', TYPES.VarChar, language);
+    request.addParameter('Customs', TYPES.VarChar, customs);
+    request.addParameter('Tips', TYPES.VarChar, tips);
+    request.addOutputParameter('Result', TYPES.Int);
+
+    request.on('returnValue', function (parameterName, value, metadata) { 
+        //if (res.headersSent) return;
+        res.send({num: value});
+    });
 
     connection.callProcedure(request);
 });

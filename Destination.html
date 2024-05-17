@@ -15,12 +15,43 @@
         .backdrop {
             backdrop-filter: blur(5px);
         }
+        .vertical-menu {
+            width: 850px;
+            height: 200px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body class="bg-gray-100 flex items-center justify-center min-h-screen">
     <div class="p-4 w-full max-w-4xl backdrop bg-white bg-opacity-70 rounded-lg shadow-lg">
+        <form id="itinerary-form" class="flex flex-col space-y-4 mt-4">
+            <h1 class="text-2xl font-bold text-center text-gray-700">Add Destination</h1>
+            <div>
+                <label for="destinationName" class="font-bold text-gray-700">Destination Name:</label>
+                <input type="text" id="destinationName" name="destinationName" required class="form-input p-2 border rounded w-full">
+            </div>
+            <div>
+                <label for="country" class="font-bold text-gray-700">Country:</label>
+                <input type="text" id="country" name="country" required class="form-input p-2 border rounded w-full">
+            </div>
+            <div>
+                <label for="language" class="font-bold text-gray-700">Language:</label>
+                <input type="text" id="language" name="language" required class="form-input p-2 border rounded w-full">
+            </div>
+            <div>
+                <label for="customs" class="font-bold text-gray-700">Customs:</label>
+                <input type="text" id="customs" name="customs" required class="form-input p-2 border rounded w-full">
+            </div>
+            <div>
+                <label for="tips" class="font-bold text-gray-700">Tips:</label>
+                <input type="text" id="tips" name="tips" required class="form-input p-2 border rounded w-full">
+            </div>
+            <input type="submit" value="Create Destination" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        </form>
         <h1 class="text-2xl font-bold text-center text-gray-700">All Destinations</h1>
-        <ul id="destinationList" class="list-none mx-auto py-4 px-6 text-center">
+        <div class="vertical-menu">
+            <ul id="destinationList" class="list-none mx-auto py-4 px-6 text-center">
+        </div>
         </ul>
         <button id="goBack" class="mt-4 bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded min-w-full">Go Back</button>
     </div>
@@ -53,6 +84,40 @@
                 .catch(error => console.error('Error fetching destinations:', error));
             }
         });
+
+        document.getElementById('itinerary-form').addEventListener('submit', function(event) {
+                event.preventDefault();
+                const destinationName = document.getElementById('destinationName').value;
+                const country = document.getElementById('country').value;
+                const language = document.getElementById('language').value;
+                const customs = document.getElementById('customs').value;
+                const tips = document.getElementById('tips').value;
+
+                fetch('/createDestination', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        destinationName: destinationName,
+                        country: country,
+                        language: language,
+                        customs: customs,
+                        tips: tips
+                    })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if(data.num == 0){
+                        alert('Destination created successfully');
+                        fetchDestinations(); 
+                    }
+                    if(data.num == 1){
+                        alert('Name must be unique');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
 
         document.getElementById('goBack').addEventListener('click', function() {
             window.location.href = 'landingPage.html'; 
