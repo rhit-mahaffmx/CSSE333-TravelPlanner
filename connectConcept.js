@@ -17,8 +17,8 @@ let config = {
     authentication: {
         type: 'default',
         options: {
-            userName: 'whelanzm',
-            password: 'Stx09067man26'
+            userName: 'TravelPlanner_S2G5User',
+            password: 'Password123'
         }
     },
     options: {
