@@ -251,12 +251,11 @@ app.post("/createReview", (req, res) => {
       request.addParameter('DestinationName', TYPES.VarChar, Destination);
       request.addParameter('StarRating', TYPES.Int, Rating);
       request.addParameter('ReviewText', TYPES.VarChar, Text);
+      request.addOutputParameter('Result', TYPES.Int);
 
-      request.on("requestCompleted", () => {
-          console.log("Review created successfully");
-          console.log("userID:", userID);
-          res.send({ message: "Review created successfully" });
-      });
+      request.on('returnValue', function (parameterName, value, metadata) { 
+        res.send({num: value});
+    });
 
       connection.callProcedure(request);
   ;
